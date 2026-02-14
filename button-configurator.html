@@ -379,12 +379,13 @@
             color: #374151;
         }
         .ghl-btn:hover { background: #f9fafb; border-color: #9ca3af; }
-        .ghl-btn .type-dot {
-            width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+        .ghl-btn .type-icon {
+            width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .ghl-btn .type-dot.dropdown-dot { background: #1565c0; }
-        .ghl-btn .type-dot.link-dot { background: #2e7d32; }
-        .ghl-btn .type-dot.tag-dot { background: #e65100; }
+        .ghl-btn .type-icon svg { width: 14px; height: 14px; }
+        .ghl-btn .type-icon.dropdown-icon svg { color: #3b82f6; }
+        .ghl-btn .type-icon.link-icon svg { color: #10b981; }
+        .ghl-btn .type-icon.tag-icon svg { color: #f59e0b; }
         .ghl-btn .arrow { font-size: 10px; margin-left: 2px; }
 
         .ghl-dropdown-menu {
@@ -1018,7 +1019,7 @@
             if (btn.type === 'dropdown') {
                 html += '<div style="position:relative;display:inline-block;">';
                 html += '<button class="ghl-btn" onclick="togglePreviewDropdown(\'' + btn.id + '\')">';
-                html += '<span class="type-dot dropdown-dot"></span>';
+                html += '<span class="type-icon dropdown-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg></span>';
                 html += escapeHtml(btn.name);
                 html += '<span class="arrow">&#9662;</span>';
                 html += '</button>';
@@ -1026,9 +1027,12 @@
                 if (btn.options) {
                     for (var j = 0; j < btn.options.length; j++) {
                         var opt = btn.options[j];
-                        var dotClass = opt.type === 'link' ? 'link-dot' : 'tag-dot';
+                        var iconClass = opt.type === 'link' ? 'link-icon' : 'tag-icon';
+                        var iconSvg = opt.type === 'link'
+                            ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>'
+                            : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>';
                         html += '<div class="ghl-dropdown-item">';
-                        html += '<span class="type-dot ' + dotClass + '"></span>';
+                        html += '<span class="type-icon ' + iconClass + '">' + iconSvg + '</span>';
                         html += escapeHtml(opt.name);
                         html += '</div>';
                     }
@@ -1036,12 +1040,12 @@
                 html += '</div></div>';
             } else if (btn.type === 'link') {
                 html += '<button class="ghl-btn">';
-                html += '<span class="type-dot link-dot"></span>';
+                html += '<span class="type-icon link-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg></span>';
                 html += escapeHtml(btn.name);
                 html += '</button>';
             } else {
                 html += '<button class="ghl-btn">';
-                html += '<span class="type-dot tag-dot"></span>';
+                html += '<span class="type-icon tag-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg></span>';
                 html += escapeHtml(btn.name);
                 html += '</button>';
             }
@@ -1257,10 +1261,11 @@
         lines.push('            "#" + CONTAINER_ID + " { display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:flex-start; }",');
         lines.push('            ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit; }",');
         lines.push('            ".gcb-btn:hover { background:#f9fafb;border-color:#9ca3af; }",');
-        lines.push('            ".gcb-dot { width:8px;height:8px;border-radius:50%;display:inline-block; }",');
-        lines.push('            ".gcb-dot-dropdown { background:#3b82f6; }",');
-        lines.push('            ".gcb-dot-link { background:#10b981; }",');
-        lines.push('            ".gcb-dot-tag { background:#f59e0b; }",');
+        lines.push('            ".gcb-icon { width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0; }",');
+        lines.push('            ".gcb-icon svg { width:14px;height:14px; }",');
+        lines.push('            ".gcb-icon-dropdown svg { color:#3b82f6; }",');
+        lines.push('            ".gcb-icon-link svg { color:#10b981; }",');
+        lines.push('            ".gcb-icon-tag svg { color:#f59e0b; }",');
         lines.push('            ".gcb-arrow { font-size:10px;margin-left:2px; }",');
         lines.push('            ".gcb-dropdown { display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:10001;margin-top:4px;overflow:hidden; }",');
         lines.push('            ".gcb-dropdown.gcb-open { display:block; }",');
@@ -1490,15 +1495,24 @@
         lines.push('            var btn = AVAILABLE_BUTTONS[i];');
         lines.push('            if (!isButtonEnabled(btn.id)) continue;');
         lines.push('');
+        lines.push('            var SVG_DROPDOWN = \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>\';');
+        lines.push('            var SVG_LINK = \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>\';');
+        lines.push('            var SVG_TAG = \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>\';');
+        lines.push('');
+        lines.push('            function makeIcon(cls, svg) {');
+        lines.push('                var span = document.createElement("span");');
+        lines.push('                span.className = "gcb-icon " + cls;');
+        lines.push('                span.innerHTML = svg;');
+        lines.push('                return span;');
+        lines.push('            }');
+        lines.push('');
         lines.push('            if (btn.type === "dropdown") {');
         lines.push('                var wrapper = document.createElement("div");');
         lines.push('                wrapper.style.cssText = "position:relative;display:inline-block;";');
         lines.push('');
         lines.push('                var button = document.createElement("button");');
         lines.push('                button.className = "gcb-btn";');
-        lines.push('                var dot = document.createElement("span");');
-        lines.push('                dot.className = "gcb-dot gcb-dot-dropdown";');
-        lines.push('                button.appendChild(dot);');
+        lines.push('                button.appendChild(makeIcon("gcb-icon-dropdown", SVG_DROPDOWN));');
         lines.push('                button.appendChild(document.createTextNode(btn.name));');
         lines.push('                var arrow = document.createElement("span");');
         lines.push('                arrow.className = "gcb-arrow";');
@@ -1522,9 +1536,8 @@
         lines.push('                        (function(opt) {');
         lines.push('                            var item = document.createElement("div");');
         lines.push('                            item.className = "gcb-dd-item";');
-        lines.push('                            var optDot = document.createElement("span");');
-        lines.push('                            optDot.className = "gcb-dot " + (opt.type === "link" ? "gcb-dot-link" : "gcb-dot-tag");');
-        lines.push('                            item.appendChild(optDot);');
+        lines.push('                            var optIcon = opt.type === "link" ? makeIcon("gcb-icon-link", SVG_LINK) : makeIcon("gcb-icon-tag", SVG_TAG);');
+        lines.push('                            item.appendChild(optIcon);');
         lines.push('                            item.appendChild(document.createTextNode(opt.name));');
         lines.push('                            item.addEventListener("click", function() {');
         lines.push('                                closeAllDropdowns();');
@@ -1547,9 +1560,7 @@
         lines.push('                (function(b) {');
         lines.push('                    var button = document.createElement("button");');
         lines.push('                    button.className = "gcb-btn";');
-        lines.push('                    var dot = document.createElement("span");');
-        lines.push('                    dot.className = "gcb-dot gcb-dot-link";');
-        lines.push('                    button.appendChild(dot);');
+        lines.push('                    button.appendChild(makeIcon("gcb-icon-link", SVG_LINK));');
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
         lines.push('                        window.open(b.value, "_blank");');
@@ -1561,9 +1572,7 @@
         lines.push('                (function(b) {');
         lines.push('                    var button = document.createElement("button");');
         lines.push('                    button.className = "gcb-btn";');
-        lines.push('                    var dot = document.createElement("span");');
-        lines.push('                    dot.className = "gcb-dot gcb-dot-tag";');
-        lines.push('                    button.appendChild(dot);');
+        lines.push('                    button.appendChild(makeIcon("gcb-icon-tag", SVG_TAG));');
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
         lines.push('                        addTagToContact(b.value);');
