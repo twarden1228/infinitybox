@@ -524,6 +524,42 @@
             gap: 10px;
             margin-bottom: 24px;
         }
+
+        /* ========== FORM FIELD CARDS (Manage Form modal) ========== */
+        .form-field-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .form-field-card .ff-info { flex: 1; }
+        .form-field-card .ff-name { font-size: 14px; font-weight: 600; color: #333; }
+        .form-field-card .ff-meta { font-size: 12px; color: #999; margin-top: 2px; }
+        .form-field-card .ff-actions { display: flex; gap: 4px; }
+        .form-field-card .ff-actions button {
+            background: none; border: none; font-size: 16px; cursor: pointer;
+            padding: 4px 8px; border-radius: 4px; color: #999; transition: all 0.15s;
+        }
+        .form-field-card .ff-actions button:hover { color: #555; background: #f0f0f0; }
+        .form-field-card .ff-actions .ff-delete:hover { color: #dc3545; background: #fee2e2; }
+
+        .badge-form { background: #f3e8ff; color: #7c3aed; }
+
+        .form-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #7c3aed;
+            background: #f3e8ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -721,6 +757,86 @@
     </div>
 </div>
 
+<!-- ==================== MANAGE FORM MODAL ==================== -->
+<div class="modal-overlay" id="modal-manage-form">
+    <div class="modal" style="width:600px;">
+        <div class="modal-header">
+            <button class="modal-close" onclick="closeModal('modal-manage-form')">&times;</button>
+            <h2 id="manage-form-title">Popup Form Fields</h2>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Form Title <span style="font-weight:400;text-transform:none;color:#999;">(shown at top of popup)</span></label>
+                <input type="text" id="form-title-input" placeholder="e.g. Enter Policy Details">
+            </div>
+            <div style="margin-top:16px;">
+                <h4 style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px;">Form Fields</h4>
+                <div id="form-fields-list">
+                    <p style="color:#999;font-size:13px;">No fields yet. Add fields below.</p>
+                </div>
+                <button class="btn-outline" style="margin-top:14px;" onclick="openAddFormFieldModal()">+ Add Field</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-manage-form')">Cancel</button>
+            <button class="btn-primary" onclick="saveFormConfig()">Save Form</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== ADD/EDIT FORM FIELD MODAL ==================== -->
+<div class="modal-overlay" id="modal-form-field">
+    <div class="modal">
+        <div class="modal-header">
+            <button class="modal-close" onclick="closeModal('modal-form-field')">&times;</button>
+            <h2 id="form-field-modal-title">Add Form Field</h2>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Field Label</label>
+                <input type="text" id="ff-label" placeholder="e.g. Lead Source">
+            </div>
+            <div class="field-group">
+                <label>Field Type</label>
+                <select id="ff-type" onchange="onFormFieldTypeChange()">
+                    <option value="text">Text</option>
+                    <option value="select">Dropdown / Select</option>
+                    <option value="date">Date</option>
+                    <option value="textarea">Textarea</option>
+                </select>
+            </div>
+            <div class="field-group" id="ff-options-group" style="display:none;">
+                <label>Options <span style="font-weight:400;text-transform:none;color:#999;">(one per line)</span></label>
+                <textarea id="ff-options" rows="4" style="width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px;resize:vertical;" placeholder="High&#10;Medium&#10;Low"></textarea>
+            </div>
+            <div class="field-group">
+                <label>Placeholder <span style="font-weight:400;text-transform:none;color:#999;">(optional)</span></label>
+                <input type="text" id="ff-placeholder" placeholder="e.g. Enter value...">
+            </div>
+            <div class="field-group">
+                <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;">
+                    <input type="checkbox" id="ff-required" style="width:auto;"> Required field
+                </label>
+            </div>
+            <div class="field-group">
+                <label>Data Destination</label>
+                <select id="ff-dest-type" onchange="onFormFieldDestChange()">
+                    <option value="customField">GHL Custom Field</option>
+                    <option value="tag">GHL Tag</option>
+                </select>
+            </div>
+            <div class="field-group" id="ff-dest-field-group">
+                <label id="ff-dest-label">Custom Field Name</label>
+                <input type="text" id="ff-dest-value" placeholder="e.g. Lead Source">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-form-field')">Cancel</button>
+            <button class="btn-primary" id="ff-save-btn" onclick="saveFormField()">Add Field</button>
+        </div>
+    </div>
+</div>
+
 <!-- ==================== NOTIFICATION ==================== -->
 <div class="notif" id="notif"></div>
 
@@ -732,6 +848,9 @@
     var currentDropdownId = null; // for adding options
     var editingButtonId = null;   // for editing
     var idCounter = 1;
+    var formEditTarget = null;     // { buttonId, optionId? }
+    var tempFormFields = [];        // working copy of fields in manage-form modal
+    var editingFieldId = null;      // null=add, fieldId=edit
 
     function generateId(prefix) {
         idCounter++;
@@ -971,6 +1090,214 @@
     }
 
     /* =============================================================
+       FORM MANAGEMENT (popup form fields)
+       ============================================================= */
+    function openManageFormModal(btnId, optId) {
+        var btn = findButton(btnId);
+        if (!btn) return;
+        formEditTarget = { buttonId: btnId, optionId: optId || null };
+        var target = btn;
+        if (optId && btn.options) {
+            for (var i = 0; i < btn.options.length; i++) {
+                if (btn.options[i].id === optId) { target = btn.options[i]; break; }
+            }
+        }
+        if (target.form) {
+            tempFormFields = JSON.parse(JSON.stringify(target.form.fields || []));
+            document.getElementById('form-title-input').value = target.form.title || '';
+        } else {
+            tempFormFields = [];
+            document.getElementById('form-title-input').value = '';
+        }
+        document.getElementById('manage-form-title').textContent = 'Popup Form: ' + target.name;
+        renderFormFieldsList();
+        openModal('modal-manage-form');
+    }
+
+    function renderFormFieldsList() {
+        var container = document.getElementById('form-fields-list');
+        if (tempFormFields.length === 0) {
+            container.innerHTML = '<p style="color:#999;font-size:13px;">No fields yet. Add fields below.</p>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < tempFormFields.length; i++) {
+            var f = tempFormFields[i];
+            var destLabel = f.destination.type === 'tag'
+                ? 'Tag' + (f.destination.prefix ? ' (prefix: ' + escapeHtml(f.destination.prefix) + ')' : '')
+                : 'Custom Field: ' + escapeHtml(f.destination.fieldName || '');
+            html += '<div class="form-field-card" data-field-id="' + f.id + '">';
+            html += '<div class="ff-info">';
+            html += '<div class="ff-name">' + escapeHtml(f.label) + (f.required ? ' <span style="color:#dc3545;">*</span>' : '') + '</div>';
+            html += '<div class="ff-meta">' + f.type + ' &rarr; ' + destLabel + '</div>';
+            html += '</div>';
+            html += '<div class="ff-actions">';
+            html += '<button onclick="editFormField(\'' + f.id + '\')" title="Edit">&#9998;</button>';
+            html += '<button onclick="moveFormField(\'' + f.id + '\', -1)" title="Move up">&#9650;</button>';
+            html += '<button onclick="moveFormField(\'' + f.id + '\', 1)" title="Move down">&#9660;</button>';
+            html += '<button class="ff-delete" onclick="deleteFormField(\'' + f.id + '\')" title="Delete">&times;</button>';
+            html += '</div>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    function openAddFormFieldModal() {
+        editingFieldId = null;
+        document.getElementById('form-field-modal-title').textContent = 'Add Form Field';
+        document.getElementById('ff-label').value = '';
+        document.getElementById('ff-type').value = 'text';
+        document.getElementById('ff-options').value = '';
+        document.getElementById('ff-placeholder').value = '';
+        document.getElementById('ff-required').checked = false;
+        document.getElementById('ff-dest-type').value = 'customField';
+        document.getElementById('ff-dest-value').value = '';
+        document.getElementById('ff-save-btn').textContent = 'Add Field';
+        onFormFieldTypeChange();
+        onFormFieldDestChange();
+        openModal('modal-form-field');
+    }
+
+    function editFormField(fieldId) {
+        var field = null;
+        for (var i = 0; i < tempFormFields.length; i++) {
+            if (tempFormFields[i].id === fieldId) { field = tempFormFields[i]; break; }
+        }
+        if (!field) return;
+        editingFieldId = fieldId;
+        document.getElementById('form-field-modal-title').textContent = 'Edit Form Field';
+        document.getElementById('ff-label').value = field.label;
+        document.getElementById('ff-type').value = field.type;
+        document.getElementById('ff-options').value = (field.options || []).join('\n');
+        document.getElementById('ff-placeholder').value = field.placeholder || '';
+        document.getElementById('ff-required').checked = !!field.required;
+        document.getElementById('ff-dest-type').value = field.destination.type;
+        document.getElementById('ff-dest-value').value =
+            field.destination.type === 'tag' ? (field.destination.prefix || '') : (field.destination.fieldName || '');
+        document.getElementById('ff-save-btn').textContent = 'Save Field';
+        onFormFieldTypeChange();
+        onFormFieldDestChange();
+        openModal('modal-form-field');
+    }
+
+    function onFormFieldTypeChange() {
+        var type = document.getElementById('ff-type').value;
+        document.getElementById('ff-options-group').style.display = (type === 'select') ? 'block' : 'none';
+    }
+
+    function onFormFieldDestChange() {
+        var destType = document.getElementById('ff-dest-type').value;
+        var label = document.getElementById('ff-dest-label');
+        var input = document.getElementById('ff-dest-value');
+        if (destType === 'tag') {
+            label.textContent = 'Tag Prefix (optional)';
+            input.placeholder = 'e.g. interest-';
+        } else {
+            label.textContent = 'Custom Field Name';
+            input.placeholder = 'e.g. Lead Source';
+        }
+    }
+
+    function saveFormField() {
+        var label = document.getElementById('ff-label').value.trim();
+        if (!label) { showNotification('Please enter a field label.'); return; }
+        var type = document.getElementById('ff-type').value;
+        var placeholder = document.getElementById('ff-placeholder').value.trim();
+        var required = document.getElementById('ff-required').checked;
+        var destType = document.getElementById('ff-dest-type').value;
+        var destValue = document.getElementById('ff-dest-value').value.trim();
+        if (destType === 'customField' && !destValue) {
+            showNotification('Please enter the custom field name.'); return;
+        }
+        var options = [];
+        if (type === 'select') {
+            var raw = document.getElementById('ff-options').value.trim();
+            if (!raw) { showNotification('Please enter at least one option.'); return; }
+            var lines = raw.split('\n');
+            for (var k = 0; k < lines.length; k++) {
+                var trimmed = lines[k].trim();
+                if (trimmed) options.push(trimmed);
+            }
+            if (options.length === 0) { showNotification('Please enter at least one option.'); return; }
+        }
+        var destination = {};
+        if (destType === 'tag') {
+            destination = { type: 'tag', prefix: destValue };
+        } else {
+            destination = { type: 'customField', fieldName: destValue };
+        }
+        var fieldObj = {
+            id: editingFieldId || generateId('fld'),
+            label: label,
+            type: type,
+            required: required,
+            placeholder: placeholder,
+            destination: destination
+        };
+        if (type === 'select') fieldObj.options = options;
+        if (editingFieldId) {
+            for (var i = 0; i < tempFormFields.length; i++) {
+                if (tempFormFields[i].id === editingFieldId) {
+                    tempFormFields[i] = fieldObj; break;
+                }
+            }
+        } else {
+            tempFormFields.push(fieldObj);
+        }
+        closeModal('modal-form-field');
+        renderFormFieldsList();
+        showNotification(editingFieldId ? 'Field updated.' : 'Field added.');
+    }
+
+    function deleteFormField(fieldId) {
+        var newFields = [];
+        for (var i = 0; i < tempFormFields.length; i++) {
+            if (tempFormFields[i].id !== fieldId) newFields.push(tempFormFields[i]);
+        }
+        tempFormFields = newFields;
+        renderFormFieldsList();
+    }
+
+    function moveFormField(fieldId, direction) {
+        var idx = -1;
+        for (var i = 0; i < tempFormFields.length; i++) {
+            if (tempFormFields[i].id === fieldId) { idx = i; break; }
+        }
+        if (idx === -1) return;
+        var newIdx = idx + direction;
+        if (newIdx < 0 || newIdx >= tempFormFields.length) return;
+        var temp = tempFormFields[idx];
+        tempFormFields[idx] = tempFormFields[newIdx];
+        tempFormFields[newIdx] = temp;
+        renderFormFieldsList();
+    }
+
+    function saveFormConfig() {
+        if (!formEditTarget) return;
+        var btn = findButton(formEditTarget.buttonId);
+        if (!btn) return;
+        var target = btn;
+        if (formEditTarget.optionId && btn.options) {
+            for (var i = 0; i < btn.options.length; i++) {
+                if (btn.options[i].id === formEditTarget.optionId) { target = btn.options[i]; break; }
+            }
+        }
+        var title = document.getElementById('form-title-input').value.trim();
+        if (tempFormFields.length === 0) {
+            delete target.form;
+        } else {
+            target.form = {
+                title: title || target.name,
+                fields: JSON.parse(JSON.stringify(tempFormFields))
+            };
+        }
+        persistDrafts();
+        closeModal('modal-manage-form');
+        renderButtonsList();
+        showNotification(tempFormFields.length > 0 ? 'Form saved.' : 'Form removed.');
+    }
+
+    /* =============================================================
        HELPERS
        ============================================================= */
     function findButton(id) {
@@ -1063,9 +1390,15 @@
             if (btn.type === 'dropdown') {
                 html += '<span class="meta">' + (btn.options ? btn.options.length : 0) + ' options</span>';
             }
+            if (btn.form && btn.form.fields && btn.form.fields.length > 0) {
+                html += '<span class="form-indicator">&#128203; Form (' + btn.form.fields.length + ')</span>';
+            }
             html += '</div>';
             html += '<div class="card-actions">';
             html += '<button title="Always visible" onclick="event.stopPropagation();">&#128065;</button>';
+            if (btn.type !== 'dropdown') {
+                html += '<button onclick="event.stopPropagation();openManageFormModal(\'' + btn.id + '\');" title="Popup Form" style="color:#7c3aed;">&#128203;</button>';
+            }
             html += '<button onclick="event.stopPropagation();openEditButtonModal(\'' + btn.id + '\');" title="Edit">&#9998;</button>';
             html += '<button class="delete-btn" onclick="event.stopPropagation();deleteButton(\'' + btn.id + '\');" title="Delete">&#128465;</button>';
             if (btn.type === 'dropdown') {
@@ -1084,9 +1417,14 @@
                         var opt = btn.options[j];
                         var optBadge = opt.type === 'link' ? 'badge-link' : 'badge-tag';
                         html += '<div class="option-card">';
-                        html += '<div class="opt-badge"><span class="badge ' + optBadge + '">' + opt.type.toUpperCase() + '</span></div>';
+                        html += '<div class="opt-badge"><span class="badge ' + optBadge + '">' + opt.type.toUpperCase() + '</span>';
+                        if (opt.form && opt.form.fields && opt.form.fields.length > 0) {
+                            html += ' <span class="form-indicator">&#128203; Form (' + opt.form.fields.length + ')</span>';
+                        }
+                        html += '</div>';
                         html += '<div class="opt-name">' + escapeHtml(opt.name) + '</div>';
                         html += '<div class="opt-value">' + escapeHtml(opt.value) + '</div>';
+                        html += '<button onclick="event.stopPropagation();openManageFormModal(\'' + btn.id + '\',\'' + opt.id + '\')" title="Popup Form" style="position:absolute;top:8px;right:32px;background:none;border:none;font-size:16px;cursor:pointer;color:#7c3aed;padding:2px 6px;border-radius:4px;">&#128203;</button>';
                         html += '<button class="opt-delete" onclick="deleteOption(\'' + btn.id + '\',\'' + opt.id + '\')">&times;</button>';
                         html += '</div>';
                     }
@@ -1099,9 +1437,11 @@
             } else if (btn.type === 'link') {
                 html += '<div class="field-group"><label>URL</label>';
                 html += '<input type="text" value="' + escapeHtml(btn.value || '') + '" onchange="updateButtonValue(\'' + btn.id + '\', this.value)"></div>';
+                html += '<div style="margin-top:14px;"><button class="btn-outline" onclick="openManageFormModal(\'' + btn.id + '\')">&#128203; ' + (btn.form ? 'Edit' : 'Add') + ' Popup Form</button></div>';
             } else {
                 html += '<div class="field-group"><label>Tag Name</label>';
                 html += '<input type="text" value="' + escapeHtml(btn.value || '') + '" onchange="updateButtonValue(\'' + btn.id + '\', this.value)"></div>';
+                html += '<div style="margin-top:14px;"><button class="btn-outline" onclick="openManageFormModal(\'' + btn.id + '\')">&#128203; ' + (btn.form ? 'Edit' : 'Add') + ' Popup Form</button></div>';
             }
             html += '</div>';
             html += '</div>';
@@ -1164,22 +1504,31 @@
                         var iconSvg = opt.type === 'link'
                             ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>'
                             : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>';
-                        html += '<div class="ghl-dropdown-item">';
+                        html += '<div class="ghl-dropdown-item" onclick="previewFormPopup(\'' + btn.id + '\',\'' + opt.id + '\')">';
                         html += '<span class="type-icon ' + iconClass + '">' + iconSvg + '</span>';
                         html += escapeHtml(opt.name);
+                        if (opt.form && opt.form.fields && opt.form.fields.length > 0) {
+                            html += ' <span class="form-indicator" style="margin-left:6px;">&#128203;</span>';
+                        }
                         html += '</div>';
                     }
                 }
                 html += '</div></div>';
             } else if (btn.type === 'link') {
-                html += '<button class="ghl-btn">';
+                html += '<button class="ghl-btn" onclick="previewFormPopup(\'' + btn.id + '\')">';
                 html += '<span class="type-icon link-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg></span>';
                 html += escapeHtml(btn.name);
+                if (btn.form && btn.form.fields && btn.form.fields.length > 0) {
+                    html += ' <span class="form-indicator" style="margin-left:4px;font-size:10px;">&#128203;</span>';
+                }
                 html += '</button>';
             } else {
-                html += '<button class="ghl-btn">';
+                html += '<button class="ghl-btn" onclick="previewFormPopup(\'' + btn.id + '\')">';
                 html += '<span class="type-icon tag-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg></span>';
                 html += escapeHtml(btn.name);
+                if (btn.form && btn.form.fields && btn.form.fields.length > 0) {
+                    html += ' <span class="form-indicator" style="margin-left:4px;font-size:10px;">&#128203;</span>';
+                }
                 html += '</button>';
             }
         }
@@ -1192,6 +1541,73 @@
         if (menu) {
             menu.classList.toggle('show');
         }
+    }
+
+    function previewFormPopup(btnId, optId) {
+        var btn = findButton(btnId);
+        if (!btn) return;
+        var target = btn;
+        if (optId && btn.options) {
+            for (var i = 0; i < btn.options.length; i++) {
+                if (btn.options[i].id === optId) { target = btn.options[i]; break; }
+            }
+        }
+        if (!target.form || !target.form.fields || target.form.fields.length === 0) {
+            showNotification('No popup form on this button. Action: ' + (target.type === 'link' ? 'Open ' + target.value : 'Add tag: ' + target.value));
+            return;
+        }
+        showPreviewFormPopup(target.form, target);
+    }
+
+    function showPreviewFormPopup(formConfig, target) {
+        var existing = document.getElementById('preview-form-overlay');
+        if (existing) existing.parentNode.removeChild(existing);
+        var overlay = document.createElement('div');
+        overlay.id = 'preview-form-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10020;display:flex;align-items:center;justify-content:center;';
+        var popup = document.createElement('div');
+        popup.style.cssText = 'background:#fff;border-radius:10px;width:460px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25);font-family:inherit;';
+        var headerHtml = '<div style="padding:18px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;">';
+        headerHtml += '<h3 style="font-size:17px;font-weight:600;margin:0;color:#1e293b;">' + escapeHtml(formConfig.title || 'Complete Form') + '</h3>';
+        headerHtml += '<button onclick="document.getElementById(\'preview-form-overlay\').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;">&times;</button>';
+        headerHtml += '</div>';
+        var bodyHtml = '<div style="padding:20px 24px;">';
+        var fields = formConfig.fields || [];
+        for (var i = 0; i < fields.length; i++) {
+            var f = fields[i];
+            bodyHtml += '<div style="margin-bottom:16px;">';
+            bodyHtml += '<label style="display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px;">' + escapeHtml(f.label);
+            if (f.required) bodyHtml += '<span style="color:#dc2626;"> *</span>';
+            bodyHtml += '</label>';
+            if (f.type === 'select') {
+                bodyHtml += '<select style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;">';
+                bodyHtml += '<option>Select...</option>';
+                if (f.options) {
+                    for (var o = 0; o < f.options.length; o++) {
+                        bodyHtml += '<option>' + escapeHtml(f.options[o]) + '</option>';
+                    }
+                }
+                bodyHtml += '</select>';
+            } else if (f.type === 'textarea') {
+                bodyHtml += '<textarea rows="3" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;font-family:inherit;box-sizing:border-box;" placeholder="' + escapeHtml(f.placeholder || '') + '"></textarea>';
+            } else if (f.type === 'date') {
+                bodyHtml += '<input type="date" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;box-sizing:border-box;">';
+            } else {
+                bodyHtml += '<input type="text" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;box-sizing:border-box;" placeholder="' + escapeHtml(f.placeholder || '') + '">';
+            }
+            bodyHtml += '</div>';
+        }
+        bodyHtml += '</div>';
+        var footerHtml = '<div style="padding:14px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;">';
+        footerHtml += '<button onclick="document.getElementById(\'preview-form-overlay\').remove()" style="padding:8px 18px;border-radius:6px;font-size:14px;cursor:pointer;border:none;background:#f1f5f9;color:#475569;">Cancel</button>';
+        footerHtml += '<button onclick="document.getElementById(\'preview-form-overlay\').remove();showNotification(\'Preview: Form submitted, then action would fire.\')" style="padding:8px 18px;border-radius:6px;font-size:14px;cursor:pointer;border:none;background:#3b82f6;color:#fff;">Submit</button>';
+        footerHtml += '</div>';
+        popup.innerHTML = headerHtml + bodyHtml + footerHtml;
+        overlay.appendChild(popup);
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) overlay.remove();
+        });
+        document.body.appendChild(overlay);
     }
 
     // Close preview dropdowns when clicking outside
@@ -1284,7 +1700,26 @@
             '.gcb-switch input:checked + .gcb-slider:before { transform:translateX(20px); }',
             '.gcb-notif { position:fixed;bottom:24px;right:24px;padding:12px 20px;background:#1e293b;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:10010;opacity:0;transform:translateY(10px);transition:all 0.3s;font-family:inherit; }',
             '.gcb-notif.gcb-show { opacity:1;transform:translateY(0); }',
-            '.gcb-notif-error { background:#dc2626; }'
+            '.gcb-notif-error { background:#dc2626; }',
+            '.gcb-form-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10020;display:flex;align-items:center;justify-content:center; }',
+            '.gcb-form-popup { background:#fff;border-radius:10px;width:460px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; }',
+            '.gcb-form-header { padding:18px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between; }',
+            '.gcb-form-header h3 { font-size:17px;font-weight:600;margin:0;color:#1e293b; }',
+            '.gcb-form-close { background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;padding:4px;line-height:1; }',
+            '.gcb-form-close:hover { color:#475569; }',
+            '.gcb-form-body { padding:20px 24px; }',
+            '.gcb-form-group { margin-bottom:16px; }',
+            '.gcb-form-label { display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px; }',
+            '.gcb-form-input { width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#1e293b;transition:border-color 0.15s;font-family:inherit;box-sizing:border-box; }',
+            '.gcb-form-input:focus { outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.1); }',
+            '.gcb-form-error { font-size:12px;color:#dc2626;margin-top:4px;min-height:0; }',
+            '.gcb-form-footer { padding:14px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px; }',
+            '.gcb-form-btn { padding:8px 18px;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit; }',
+            '.gcb-form-btn-cancel { background:#f1f5f9;color:#475569; }',
+            '.gcb-form-btn-cancel:hover { background:#e2e8f0; }',
+            '.gcb-form-btn-submit { background:#3b82f6;color:#fff; }',
+            '.gcb-form-btn-submit:hover { background:#2563eb; }',
+            '.gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }'
         ].join('\n');
     }
 
@@ -1307,17 +1742,20 @@
                 if (btn.options) {
                     for (var j = 0; j < btn.options.length; j++) {
                         var opt = btn.options[j];
-                        entry.options.push({
+                        var optEntry = {
                             id: opt.id,
                             name: opt.name,
                             type: opt.type,
                             value: opt.value
-                        });
+                        };
+                        if (opt.form) optEntry.form = JSON.parse(JSON.stringify(opt.form));
+                        entry.options.push(optEntry);
                     }
                 }
             } else {
                 entry.value = btn.value;
             }
+            if (btn.form) entry.form = JSON.parse(JSON.stringify(btn.form));
             config.push(entry);
         }
         return config;
@@ -1589,7 +2027,26 @@
         lines.push('                ".gcb-switch input:checked + .gcb-slider:before { transform:translateX(20px); }",');
         lines.push('                ".gcb-notif { position:fixed;bottom:24px;right:24px;padding:12px 20px;background:#1e293b;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:10010;opacity:0;transform:translateY(10px);transition:all 0.3s;font-family:inherit; }",');
         lines.push('                ".gcb-notif.gcb-show { opacity:1;transform:translateY(0); }",');
-        lines.push('                ".gcb-notif-error { background:#dc2626; }"');
+        lines.push('                ".gcb-notif-error { background:#dc2626; }",');
+        lines.push('                ".gcb-form-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10020;display:flex;align-items:center;justify-content:center; }",');
+        lines.push('                ".gcb-form-popup { background:#fff;border-radius:10px;width:460px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.25);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; }",');
+        lines.push('                ".gcb-form-header { padding:18px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between; }",');
+        lines.push('                ".gcb-form-header h3 { font-size:17px;font-weight:600;margin:0;color:#1e293b; }",');
+        lines.push('                ".gcb-form-close { background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;padding:4px;line-height:1; }",');
+        lines.push('                ".gcb-form-close:hover { color:#475569; }",');
+        lines.push('                ".gcb-form-body { padding:20px 24px; }",');
+        lines.push('                ".gcb-form-group { margin-bottom:16px; }",');
+        lines.push('                ".gcb-form-label { display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px; }",');
+        lines.push('                ".gcb-form-input { width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;color:#1e293b;transition:border-color 0.15s;font-family:inherit;box-sizing:border-box; }",');
+        lines.push('                ".gcb-form-input:focus { outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.1); }",');
+        lines.push('                ".gcb-form-error { font-size:12px;color:#dc2626;margin-top:4px;min-height:0; }",');
+        lines.push('                ".gcb-form-footer { padding:14px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px; }",');
+        lines.push('                ".gcb-form-btn { padding:8px 18px;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('                ".gcb-form-btn-cancel { background:#f1f5f9;color:#475569; }",');
+        lines.push('                ".gcb-form-btn-cancel:hover { background:#e2e8f0; }",');
+        lines.push('                ".gcb-form-btn-submit { background:#3b82f6;color:#fff; }",');
+        lines.push('                ".gcb-form-btn-submit:hover { background:#2563eb; }",');
+        lines.push('                ".gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }"');
         lines.push('            ].join("\\n");');
         lines.push('        }');
         lines.push('        document.head.appendChild(style);');
@@ -1661,6 +2118,232 @@
         lines.push('        }, 100);');
         lines.push('    }');
         lines.push('');
+        // ---- CUSTOM FIELD DOM MANIPULATION ----
+        lines.push('    // ---- CUSTOM FIELD VALUE ----');
+        lines.push('    function setCustomFieldValue(fieldName, value) {');
+        lines.push('        console.log("[GHL Buttons] Setting custom field: " + fieldName + " = " + value);');
+        lines.push('        var labels = document.querySelectorAll("label");');
+        lines.push('        var targetInput = null;');
+        lines.push('        for (var i = 0; i < labels.length; i++) {');
+        lines.push('            if (labels[i].textContent.trim().toLowerCase() === fieldName.toLowerCase()) {');
+        lines.push('                var parent = labels[i].closest(".form-group") || labels[i].parentElement;');
+        lines.push('                targetInput = parent.querySelector("input, textarea, select");');
+        lines.push('                if (targetInput) break;');
+        lines.push('            }');
+        lines.push('        }');
+        lines.push('        if (!targetInput) {');
+        lines.push('            targetInput = document.querySelector(\'input[placeholder*="\' + fieldName + \'" i]\');');
+        lines.push('        }');
+        lines.push('        if (!targetInput) {');
+        lines.push('            targetInput = document.querySelector(\'[aria-label*="\' + fieldName + \'" i]\');');
+        lines.push('        }');
+        lines.push('        if (!targetInput) {');
+        lines.push('            showNotification("Custom field \'" + fieldName + "\' not found on page.", true);');
+        lines.push('            return false;');
+        lines.push('        }');
+        lines.push('        if (targetInput.tagName === "SELECT") {');
+        lines.push('            targetInput.value = value;');
+        lines.push('            targetInput.dispatchEvent(new Event("change", { bubbles: true }));');
+        lines.push('        } else {');
+        lines.push('            var nativeSetter = Object.getOwnPropertyDescriptor(');
+        lines.push('                targetInput.tagName === "TEXTAREA" ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype, "value"');
+        lines.push('            ).set;');
+        lines.push('            nativeSetter.call(targetInput, value);');
+        lines.push('            targetInput.dispatchEvent(new Event("input", { bubbles: true }));');
+        lines.push('            targetInput.dispatchEvent(new Event("change", { bubbles: true }));');
+        lines.push('        }');
+        lines.push('        targetInput.dispatchEvent(new Event("blur", { bubbles: true }));');
+        lines.push('        return true;');
+        lines.push('    }');
+        lines.push('');
+
+        // ---- FORM SUBMISSION PROCESSOR ----
+        lines.push('    // ---- FORM SUBMISSION PROCESSOR ----');
+        lines.push('    function processFormSubmission(formFields, fieldValues, callback) {');
+        lines.push('        var tagQueue = [];');
+        lines.push('        var cfQueue = [];');
+        lines.push('        for (var i = 0; i < formFields.length; i++) {');
+        lines.push('            var field = formFields[i];');
+        lines.push('            var value = fieldValues[field.id];');
+        lines.push('            if (!value || value.trim() === "") continue;');
+        lines.push('            value = value.trim();');
+        lines.push('            if (field.destination.type === "tag") {');
+        lines.push('                var prefix = field.destination.prefix || "";');
+        lines.push('                var tagValue = prefix + value.toLowerCase().replace(/\\s+/g, "-");');
+        lines.push('                tagQueue.push(tagValue);');
+        lines.push('            } else if (field.destination.type === "customField") {');
+        lines.push('                cfQueue.push({ fieldName: field.destination.fieldName, value: value });');
+        lines.push('            }');
+        lines.push('        }');
+        lines.push('        for (var c = 0; c < cfQueue.length; c++) {');
+        lines.push('            setCustomFieldValue(cfQueue[c].fieldName, cfQueue[c].value);');
+        lines.push('        }');
+        lines.push('        function processNextTag(index) {');
+        lines.push('            if (index >= tagQueue.length) {');
+        lines.push('                if (callback) callback();');
+        lines.push('                return;');
+        lines.push('            }');
+        lines.push('            addTagToContact(tagQueue[index]);');
+        lines.push('            setTimeout(function() { processNextTag(index + 1); }, 400);');
+        lines.push('        }');
+        lines.push('        if (tagQueue.length > 0) {');
+        lines.push('            processNextTag(0);');
+        lines.push('        } else {');
+        lines.push('            if (callback) callback();');
+        lines.push('        }');
+        lines.push('    }');
+        lines.push('');
+
+        // ---- FORM POPUP ----
+        lines.push('    // ---- FORM POPUP ----');
+        lines.push('    function showFormPopup(formConfig, onSubmit) {');
+        lines.push('        var existing = document.getElementById("gcb-form-overlay");');
+        lines.push('        if (existing) existing.parentNode.removeChild(existing);');
+        lines.push('');
+        lines.push('        var overlay = document.createElement("div");');
+        lines.push('        overlay.id = "gcb-form-overlay";');
+        lines.push('        overlay.className = "gcb-form-overlay";');
+        lines.push('');
+        lines.push('        var popup = document.createElement("div");');
+        lines.push('        popup.className = "gcb-form-popup";');
+        lines.push('');
+        lines.push('        var header = document.createElement("div");');
+        lines.push('        header.className = "gcb-form-header";');
+        lines.push('        var title = document.createElement("h3");');
+        lines.push('        title.textContent = formConfig.title || "Complete Form";');
+        lines.push('        var closeBtn = document.createElement("button");');
+        lines.push('        closeBtn.className = "gcb-form-close";');
+        lines.push('        closeBtn.innerHTML = "&times;";');
+        lines.push('        closeBtn.addEventListener("click", function() {');
+        lines.push('            overlay.parentNode.removeChild(overlay);');
+        lines.push('        });');
+        lines.push('        header.appendChild(title);');
+        lines.push('        header.appendChild(closeBtn);');
+        lines.push('        popup.appendChild(header);');
+        lines.push('');
+        lines.push('        var body = document.createElement("div");');
+        lines.push('        body.className = "gcb-form-body";');
+        lines.push('        var fields = formConfig.fields || [];');
+        lines.push('');
+        lines.push('        for (var i = 0; i < fields.length; i++) {');
+        lines.push('            (function(field) {');
+        lines.push('                var group = document.createElement("div");');
+        lines.push('                group.className = "gcb-form-group";');
+        lines.push('                var label = document.createElement("label");');
+        lines.push('                label.className = "gcb-form-label";');
+        lines.push('                label.textContent = field.label;');
+        lines.push('                if (field.required) {');
+        lines.push('                    var req = document.createElement("span");');
+        lines.push('                    req.style.color = "#dc2626";');
+        lines.push('                    req.textContent = " *";');
+        lines.push('                    label.appendChild(req);');
+        lines.push('                }');
+        lines.push('                group.appendChild(label);');
+        lines.push('');
+        lines.push('                var input;');
+        lines.push('                if (field.type === "select") {');
+        lines.push('                    input = document.createElement("select");');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    var emptyOpt = document.createElement("option");');
+        lines.push('                    emptyOpt.value = "";');
+        lines.push('                    emptyOpt.textContent = "Select...";');
+        lines.push('                    input.appendChild(emptyOpt);');
+        lines.push('                    if (field.options) {');
+        lines.push('                        for (var o = 0; o < field.options.length; o++) {');
+        lines.push('                            var opt = document.createElement("option");');
+        lines.push('                            opt.value = field.options[o];');
+        lines.push('                            opt.textContent = field.options[o];');
+        lines.push('                            input.appendChild(opt);');
+        lines.push('                        }');
+        lines.push('                    }');
+        lines.push('                } else if (field.type === "textarea") {');
+        lines.push('                    input = document.createElement("textarea");');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    input.rows = 3;');
+        lines.push('                    if (field.placeholder) input.placeholder = field.placeholder;');
+        lines.push('                } else if (field.type === "date") {');
+        lines.push('                    input = document.createElement("input");');
+        lines.push('                    input.type = "date";');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                } else {');
+        lines.push('                    input = document.createElement("input");');
+        lines.push('                    input.type = "text";');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    if (field.placeholder) input.placeholder = field.placeholder;');
+        lines.push('                }');
+        lines.push('                input.setAttribute("data-field-id", field.id);');
+        lines.push('                group.appendChild(input);');
+        lines.push('');
+        lines.push('                var errMsg = document.createElement("div");');
+        lines.push('                errMsg.className = "gcb-form-error";');
+        lines.push('                errMsg.setAttribute("data-err-for", field.id);');
+        lines.push('                group.appendChild(errMsg);');
+        lines.push('                body.appendChild(group);');
+        lines.push('            })(fields[i]);');
+        lines.push('        }');
+        lines.push('        popup.appendChild(body);');
+        lines.push('');
+        lines.push('        var footer = document.createElement("div");');
+        lines.push('        footer.className = "gcb-form-footer";');
+        lines.push('        var cancelBtn = document.createElement("button");');
+        lines.push('        cancelBtn.className = "gcb-form-btn gcb-form-btn-cancel";');
+        lines.push('        cancelBtn.textContent = "Cancel";');
+        lines.push('        cancelBtn.addEventListener("click", function() {');
+        lines.push('            overlay.parentNode.removeChild(overlay);');
+        lines.push('        });');
+        lines.push('        var submitBtn = document.createElement("button");');
+        lines.push('        submitBtn.className = "gcb-form-btn gcb-form-btn-submit";');
+        lines.push('        submitBtn.textContent = "Submit";');
+        lines.push('        submitBtn.addEventListener("click", function() {');
+        lines.push('            if (submitBtn.disabled) return;');
+        lines.push('            var values = {};');
+        lines.push('            var hasError = false;');
+        lines.push('            for (var v = 0; v < fields.length; v++) {');
+        lines.push('                var f = fields[v];');
+        lines.push('                var inp = popup.querySelector(\'[data-field-id="\' + f.id + \'"]\');');
+        lines.push('                var val = inp ? inp.value : "";');
+        lines.push('                values[f.id] = val;');
+        lines.push('                var errEl = popup.querySelector(\'[data-err-for="\' + f.id + \'"]\');');
+        lines.push('                if (f.required && (!val || val.trim() === "")) {');
+        lines.push('                    if (errEl) errEl.textContent = f.label + " is required.";');
+        lines.push('                    if (inp) inp.style.borderColor = "#dc2626";');
+        lines.push('                    hasError = true;');
+        lines.push('                } else {');
+        lines.push('                    if (errEl) errEl.textContent = "";');
+        lines.push('                    if (inp) inp.style.borderColor = "#d1d5db";');
+        lines.push('                }');
+        lines.push('            }');
+        lines.push('            if (hasError) return;');
+        lines.push('            submitBtn.disabled = true;');
+        lines.push('            submitBtn.textContent = "Processing...";');
+        lines.push('            overlay.parentNode.removeChild(overlay);');
+        lines.push('            processFormSubmission(fields, values, function() {');
+        lines.push('                if (onSubmit) onSubmit();');
+        lines.push('            });');
+        lines.push('        });');
+        lines.push('        footer.appendChild(cancelBtn);');
+        lines.push('        footer.appendChild(submitBtn);');
+        lines.push('        popup.appendChild(footer);');
+        lines.push('        overlay.appendChild(popup);');
+        lines.push('');
+        lines.push('        overlay.addEventListener("click", function(e) {');
+        lines.push('            if (e.target === overlay) overlay.parentNode.removeChild(overlay);');
+        lines.push('        });');
+        lines.push('');
+        lines.push('        document.addEventListener("keydown", function escHandler(e) {');
+        lines.push('            if (e.key === "Escape") {');
+        lines.push('                var el = document.getElementById("gcb-form-overlay");');
+        lines.push('                if (el) el.parentNode.removeChild(el);');
+        lines.push('                document.removeEventListener("keydown", escHandler);');
+        lines.push('            }');
+        lines.push('        });');
+        lines.push('');
+        lines.push('        document.body.appendChild(overlay);');
+        lines.push('        var firstInput = popup.querySelector("input, select, textarea");');
+        lines.push('        if (firstInput) setTimeout(function() { firstInput.focus(); }, 50);');
+        lines.push('    }');
+        lines.push('');
+
         lines.push('    // ---- CLOSE ALL DROPDOWNS ----');
         lines.push('    function closeAllDropdowns() {');
         lines.push('        var menus = document.querySelectorAll(".gcb-dropdown");');
@@ -1839,10 +2522,17 @@
         lines.push('                            item.appendChild(document.createTextNode(opt.name));');
         lines.push('                            item.addEventListener("click", function() {');
         lines.push('                                closeAllDropdowns();');
-        lines.push('                                if (opt.type === "link") {');
-        lines.push('                                    window.open(opt.value, "_blank");');
+        lines.push('                                var action = function() {');
+        lines.push('                                    if (opt.type === "link") {');
+        lines.push('                                        window.open(opt.value, "_blank");');
+        lines.push('                                    } else {');
+        lines.push('                                        addTagToContact(opt.value);');
+        lines.push('                                    }');
+        lines.push('                                };');
+        lines.push('                                if (opt.form && opt.form.fields && opt.form.fields.length > 0) {');
+        lines.push('                                    showFormPopup(opt.form, action);');
         lines.push('                                } else {');
-        lines.push('                                    addTagToContact(opt.value);');
+        lines.push('                                    action();');
         lines.push('                                }');
         lines.push('                            });');
         lines.push('                            menu.appendChild(item);');
@@ -1861,7 +2551,11 @@
         lines.push('                    button.appendChild(makeIcon("gcb-icon-link", SVG_LINK));');
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
-        lines.push('                        window.open(b.value, "_blank");');
+        lines.push('                        if (b.form && b.form.fields && b.form.fields.length > 0) {');
+        lines.push('                            showFormPopup(b.form, function() { window.open(b.value, "_blank"); });');
+        lines.push('                        } else {');
+        lines.push('                            window.open(b.value, "_blank");');
+        lines.push('                        }');
         lines.push('                    });');
         lines.push('                    container.appendChild(button);');
         lines.push('                })(btn);');
@@ -1873,7 +2567,11 @@
         lines.push('                    button.appendChild(makeIcon("gcb-icon-tag", SVG_TAG));');
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
-        lines.push('                        addTagToContact(b.value);');
+        lines.push('                        if (b.form && b.form.fields && b.form.fields.length > 0) {');
+        lines.push('                            showFormPopup(b.form, function() { addTagToContact(b.value); });');
+        lines.push('                        } else {');
+        lines.push('                            addTagToContact(b.value);');
+        lines.push('                        }');
         lines.push('                    });');
         lines.push('                    container.appendChild(button);');
         lines.push('                })(btn);');
