@@ -536,6 +536,7 @@
         <h2>Configure Available Buttons</h2>
         <div class="section-header-actions">
             <button class="btn-primary" onclick="openAddButtonModal()">+ Add Button</button>
+            <button class="btn-success" onclick="saveToGitHub()">&#128190; Save to GitHub</button>
             <button class="btn-success" onclick="generateCode()">&#9889; Generate Code</button>
         </div>
     </div>
@@ -545,6 +546,13 @@
             <input type="text" id="config-url" value="https://twarden1228.github.io/infinitybox/ghl-buttons-config.json" placeholder="https://yourdomain.com/ghl-buttons-config.json" style="font-family:'Courier New',monospace;font-size:13px;">
         </div>
         <p style="font-size:12px;color:#999;margin-top:8px;">The generated script will fetch button configuration from this URL at runtime. Host the JSON output at this exact URL. You only need to paste the script into GHL once &mdash; just update the JSON file when buttons change.</p>
+    </div>
+    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <div class="field-group" style="margin-top:0;">
+            <label>GitHub Personal Access Token <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(stored locally in your browser only)</span></label>
+            <input type="password" id="github-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="font-family:'Courier New',monospace;font-size:13px;">
+        </div>
+        <p style="font-size:12px;color:#999;margin-top:8px;">Create a token at GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens (classic) with <code>public_repo</code> scope. This lets the configurator save the JSON config directly to the repo so you never have to manually update it.</p>
     </div>
     <div style="margin-bottom: 16px;">
         <button class="btn-outline" onclick="loadExample()">Load Example Data</button>
@@ -1677,6 +1685,113 @@
         el.textContent = msg;
         el.classList.add('show');
         setTimeout(function() { el.classList.remove('show'); }, 2500);
+    }
+
+    /* =============================================================
+       GITHUB AUTO-SAVE
+       ============================================================= */
+    var GITHUB_OWNER = "twarden1228";
+    var GITHUB_REPO = "infinitybox";
+    var GITHUB_BRANCH = "main";
+    var GITHUB_FILE_PATH = "ghl-buttons-config.json";
+    var GITHUB_TOKEN_KEY = "ghl_github_token";
+
+    // Load saved token on page load
+    (function() {
+        var saved = localStorage.getItem(GITHUB_TOKEN_KEY);
+        if (saved) {
+            document.getElementById('github-token').value = saved;
+        }
+        document.getElementById('github-token').addEventListener('input', function() {
+            localStorage.setItem(GITHUB_TOKEN_KEY, this.value.trim());
+        });
+    })();
+
+    function saveToGitHub() {
+        if (buttons.length === 0) {
+            showNotification('Add at least one button first.');
+            return;
+        }
+
+        var token = document.getElementById('github-token').value.trim();
+        if (!token) {
+            showNotification('Enter a GitHub Personal Access Token first.');
+            return;
+        }
+
+        // Build config JSON (same logic as generateCode)
+        var config = [];
+        for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            var entry = { id: btn.id, name: btn.name, type: btn.type };
+            if (btn.type === 'dropdown') {
+                entry.options = [];
+                if (btn.options) {
+                    for (var j = 0; j < btn.options.length; j++) {
+                        var opt = btn.options[j];
+                        entry.options.push({ id: opt.id, name: opt.name, type: opt.type, value: opt.value });
+                    }
+                }
+            } else {
+                entry.value = btn.value;
+            }
+            config.push(entry);
+        }
+
+        var configJSON = JSON.stringify(config, null, 4) + '\n';
+        var contentBase64 = btoa(unescape(encodeURIComponent(configJSON)));
+        var apiUrl = 'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + GITHUB_FILE_PATH;
+
+        showNotification('Saving to GitHub...');
+
+        // Step 1: GET current file SHA (needed for update)
+        var getXhr = new XMLHttpRequest();
+        getXhr.open('GET', apiUrl + '?ref=' + GITHUB_BRANCH, true);
+        getXhr.setRequestHeader('Authorization', 'token ' + token);
+        getXhr.setRequestHeader('Accept', 'application/vnd.github.v3+json');
+        getXhr.onreadystatechange = function() {
+            if (getXhr.readyState !== 4) return;
+
+            var sha = null;
+            if (getXhr.status >= 200 && getXhr.status < 300) {
+                try {
+                    var data = JSON.parse(getXhr.responseText);
+                    sha = data.sha;
+                } catch(e) { /* new file */ }
+            } else if (getXhr.status !== 404) {
+                showNotification('GitHub API error: ' + getXhr.status + '. Check your token.');
+                return;
+            }
+
+            // Step 2: PUT updated file
+            var putXhr = new XMLHttpRequest();
+            putXhr.open('PUT', apiUrl, true);
+            putXhr.setRequestHeader('Authorization', 'token ' + token);
+            putXhr.setRequestHeader('Accept', 'application/vnd.github.v3+json');
+            putXhr.setRequestHeader('Content-Type', 'application/json');
+            putXhr.onreadystatechange = function() {
+                if (putXhr.readyState !== 4) return;
+                if (putXhr.status >= 200 && putXhr.status < 300) {
+                    showNotification('Saved to GitHub! Changes will be live in ~1 minute.');
+                } else {
+                    var errMsg = 'Save failed: ' + putXhr.status;
+                    try {
+                        var errData = JSON.parse(putXhr.responseText);
+                        if (errData.message) errMsg += ' - ' + errData.message;
+                    } catch(e) {}
+                    showNotification(errMsg);
+                }
+            };
+
+            var body = {
+                message: 'Update button config via configurator',
+                content: contentBase64,
+                branch: GITHUB_BRANCH
+            };
+            if (sha) body.sha = sha;
+            putXhr.send(JSON.stringify(body));
+        };
+        getXhr.send();
     }
 
     // Initial render
