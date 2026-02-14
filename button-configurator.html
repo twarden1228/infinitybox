@@ -190,6 +190,33 @@
         .badge-dropdown { background: #e3f2fd; color: #1565c0; }
         .badge-link { background: #e8f5e9; color: #2e7d32; }
         .badge-tag { background: #fff3e0; color: #e65100; }
+        .badge-published { background: #e8f5e9; color: #2e7d32; }
+        .badge-modified { background: #fff3e0; color: #e65100; }
+        .badge-draft { background: #e3f2fd; color: #1565c0; }
+
+        .draft-status-bar {
+            display: flex;
+            gap: 16px;
+            padding: 12px 18px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #555;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .dot-published { background: #2e7d32; }
+        .dot-modified { background: #e65100; }
+        .dot-draft { background: #1565c0; }
 
         .card-actions { display: flex; align-items: center; gap: 6px; }
         .card-actions button {
@@ -537,7 +564,7 @@
         <h2>Configure Available Buttons</h2>
         <div class="section-header-actions">
             <button class="btn-primary" onclick="openAddButtonModal()">+ Add Button</button>
-            <button class="btn-success" onclick="saveToGitHub()">&#128190; Save to GitHub</button>
+            <button class="btn-success" id="publish-btn" onclick="saveToGitHub()">&#128640; Publish to GitHub</button>
             <button class="btn-success" onclick="generateCode()">&#9889; Generate Code</button>
         </div>
     </div>
@@ -712,6 +739,67 @@
     }
 
     /* =============================================================
+       DRAFT / PUBLISHED PERSISTENCE
+       ============================================================= */
+    var DRAFT_STORAGE_KEY = "ghl_configurator_drafts";
+    var PUBLISHED_SNAPSHOT_KEY = "ghl_configurator_published_snapshot";
+    var publishedSnapshot = null;
+
+    function persistDrafts() {
+        try {
+            localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
+                buttons: buttons,
+                lastModified: Date.now()
+            }));
+        } catch(e) { /* storage full — non-critical */ }
+    }
+
+    function loadDrafts() {
+        try {
+            var raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        return null;
+    }
+
+    function savePublishedSnapshot(arr) {
+        publishedSnapshot = JSON.parse(JSON.stringify(arr));
+        try {
+            localStorage.setItem(PUBLISHED_SNAPSHOT_KEY, JSON.stringify(publishedSnapshot));
+        } catch(e) {}
+    }
+
+    function loadPublishedSnapshot() {
+        try {
+            var raw = localStorage.getItem(PUBLISHED_SNAPSHOT_KEY);
+            if (raw) publishedSnapshot = JSON.parse(raw);
+        } catch(e) { publishedSnapshot = null; }
+    }
+
+    function getButtonStatus(btn) {
+        if (!publishedSnapshot) return 'draft';
+        for (var i = 0; i < publishedSnapshot.length; i++) {
+            if (publishedSnapshot[i].id === btn.id) {
+                if (JSON.stringify(btn) === JSON.stringify(publishedSnapshot[i])) return 'published';
+                return 'modified';
+            }
+        }
+        return 'draft';
+    }
+
+    function hasUnpublishedChanges() {
+        for (var i = 0; i < buttons.length; i++) {
+            if (getButtonStatus(buttons[i]) !== 'published') return true;
+        }
+        if (publishedSnapshot) {
+            for (var j = 0; j < publishedSnapshot.length; j++) {
+                if (!findButton(publishedSnapshot[j].id)) return true;
+            }
+        }
+        return false;
+    }
+
+    /* =============================================================
        TABS
        ============================================================= */
     function switchTab(tabName) {
@@ -788,6 +876,7 @@
             btn.value = value;
         }
         buttons.push(btn);
+        persistDrafts();
         closeModal('modal-add-button');
         renderButtonsList();
         showNotification('Button added: ' + name);
@@ -833,6 +922,7 @@
             type: type,
             value: value
         });
+        persistDrafts();
         closeModal('modal-add-option');
         renderButtonsList();
         showNotification('Option added: ' + name);
@@ -874,6 +964,7 @@
             if (!value) { showNotification('Please enter a value.'); return; }
             btn.value = value;
         }
+        persistDrafts();
         closeModal('modal-edit-button');
         renderButtonsList();
         showNotification('Button updated.');
@@ -892,6 +983,7 @@
     function deleteButton(id) {
         if (!confirm('Delete this button?')) return;
         buttons = buttons.filter(function(b) { return b.id !== id; });
+        persistDrafts();
         renderButtonsList();
         showNotification('Button deleted.');
     }
@@ -900,6 +992,7 @@
         var btn = findButton(btnId);
         if (!btn) return;
         btn.options = btn.options.filter(function(o) { return o.id !== optId; });
+        persistDrafts();
         renderButtonsList();
     }
 
@@ -925,19 +1018,44 @@
         if (buttons.length === 0) {
             container.innerHTML = '';
             container.appendChild(createEmptyState());
+            updatePublishButton(0);
             return;
         }
 
-        var html = '';
+        // Compute status counts
+        var publishedCount = 0, modifiedCount = 0, draftCount = 0;
+        for (var s = 0; s < buttons.length; s++) {
+            var st = getButtonStatus(buttons[s]);
+            if (st === 'published') publishedCount++;
+            else if (st === 'modified') modifiedCount++;
+            else draftCount++;
+        }
+        // Check for deleted published buttons
+        if (publishedSnapshot) {
+            for (var d = 0; d < publishedSnapshot.length; d++) {
+                if (!findButton(publishedSnapshot[d].id)) modifiedCount++;
+            }
+        }
+
+        var html = '<div class="draft-status-bar">';
+        html += '<span><span class="status-dot dot-published"></span>' + publishedCount + ' published</span>';
+        if (modifiedCount > 0) html += '<span><span class="status-dot dot-modified"></span>' + modifiedCount + ' modified</span>';
+        if (draftCount > 0) html += '<span><span class="status-dot dot-draft"></span>' + draftCount + ' draft</span>';
+        html += '</div>';
+
         for (var i = 0; i < buttons.length; i++) {
             var btn = buttons[i];
             var badgeClass = 'badge-' + btn.type;
             var typeLabel = btn.type.charAt(0).toUpperCase() + btn.type.slice(1);
+            var btnStatus = getButtonStatus(btn);
+            var statusBadgeClass = 'badge-' + btnStatus;
+            var statusLabel = btnStatus.charAt(0).toUpperCase() + btnStatus.slice(1);
 
             html += '<div class="button-card">';
             html += '<div class="card-header" onclick="toggleCardBody(\'' + btn.id + '\')">';
             html += '<div class="card-header-left">';
             html += '<span class="badge ' + badgeClass + '">' + typeLabel + '</span>';
+            html += '<span class="badge ' + statusBadgeClass + '">' + statusLabel + '</span>';
             html += '<h3>' + escapeHtml(btn.name) + '</h3>';
             if (btn.type !== 'dropdown' && btn.value) {
                 html += '<span class="meta">' + escapeHtml(btn.value) + '</span>';
@@ -989,6 +1107,17 @@
             html += '</div>';
         }
         container.innerHTML = html;
+        updatePublishButton(modifiedCount + draftCount);
+    }
+
+    function updatePublishButton(unpublished) {
+        var btn = document.getElementById('publish-btn');
+        if (!btn) return;
+        if (unpublished > 0) {
+            btn.innerHTML = '&#128640; Publish to GitHub (' + unpublished + ')';
+        } else {
+            btn.innerHTML = '&#9989; Published';
+        }
     }
 
     function createEmptyState() {
@@ -1001,7 +1130,10 @@
 
     function updateButtonValue(btnId, newValue) {
         var btn = findButton(btnId);
-        if (btn) btn.value = newValue.trim();
+        if (btn) {
+            btn.value = newValue.trim();
+            persistDrafts();
+        }
     }
 
     /* =============================================================
@@ -1100,6 +1232,7 @@
                 value: 'hot-lead'
             }
         ];
+        persistDrafts();
         renderButtonsList();
         showNotification('Example buttons loaded.');
     }
@@ -1204,6 +1337,14 @@
         var separator = configUrl.indexOf('?') !== -1 ? '&' : '?';
         var url = configUrl + separator + cacheBuster;
 
+        function fallbackToDrafts() {
+            var drafts = loadDrafts();
+            if (drafts && drafts.buttons && drafts.buttons.length > 0) {
+                buttons = drafts.buttons;
+                renderButtonsList();
+            }
+        }
+
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.timeout = 10000;
@@ -1218,9 +1359,32 @@
                             btnData = data.slice(1);
                         }
                         if (btnData.length > 0) {
+                            // Always update the published snapshot
+                            savePublishedSnapshot(btnData);
+
+                            if (silent) {
+                                // Auto-load: prefer local drafts over GitHub data
+                                var drafts = loadDrafts();
+                                if (drafts && drafts.buttons && drafts.buttons.length > 0) {
+                                    buttons = drafts.buttons;
+                                } else {
+                                    buttons = btnData;
+                                    persistDrafts();
+                                }
+                                renderButtonsList();
+                                return;
+                            }
+
+                            // Manual load: warn if there are unsaved changes
+                            if (hasUnpublishedChanges()) {
+                                if (!confirm('You have unpublished changes. Loading from GitHub will discard them. Continue?')) {
+                                    return;
+                                }
+                            }
                             buttons = btnData;
+                            persistDrafts();
                             renderButtonsList();
-                            if (!silent) showNotification('Loaded ' + btnData.length + ' button(s) from config.');
+                            showNotification('Loaded ' + btnData.length + ' button(s) from config.');
                             return;
                         }
                     }
@@ -1229,14 +1393,17 @@
                     if (!silent) showNotification('Error parsing config JSON.');
                 }
             } else {
-                if (!silent) showNotification('Could not fetch config (HTTP ' + xhr.status + ').');
+                if (silent) { fallbackToDrafts(); return; }
+                showNotification('Could not fetch config (HTTP ' + xhr.status + ').');
             }
         };
         xhr.ontimeout = function() {
-            if (!silent) showNotification('Config fetch timed out.');
+            if (silent) { fallbackToDrafts(); return; }
+            showNotification('Config fetch timed out.');
         };
         xhr.onerror = function() {
-            if (!silent) showNotification('Network error fetching config.');
+            if (silent) { fallbackToDrafts(); return; }
+            showNotification('Network error fetching config.');
         };
         xhr.send();
     }
@@ -1864,7 +2031,7 @@
         var contentBase64 = btoa(unescape(encodeURIComponent(configJSON)));
         var apiUrl = 'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + GITHUB_FILE_PATH;
 
-        showNotification('Saving to GitHub...');
+        showNotification('Publishing to GitHub...');
 
         // Step 1: GET current file SHA (needed for update)
         var getXhr = new XMLHttpRequest();
@@ -1894,9 +2061,12 @@
             putXhr.onreadystatechange = function() {
                 if (putXhr.readyState !== 4) return;
                 if (putXhr.status >= 200 && putXhr.status < 300) {
-                    showNotification('Saved to GitHub! Changes will be live in ~1 minute.');
+                    savePublishedSnapshot(buttons);
+                    persistDrafts();
+                    renderButtonsList();
+                    showNotification('Published to GitHub! Changes will be live in ~1 minute.');
                 } else {
-                    var errMsg = 'Save failed: ' + putXhr.status;
+                    var errMsg = 'Publish failed: ' + putXhr.status;
                     try {
                         var errData = JSON.parse(putXhr.responseText);
                         if (errData.message) errMsg += ' - ' + errData.message;
@@ -1916,11 +2086,22 @@
         getXhr.send();
     }
 
-    // Initial render
+    // Boot sequence: load drafts first (instant), then fetch published state from GitHub
+    loadPublishedSnapshot();
+    var drafts = loadDrafts();
+    if (drafts && drafts.buttons && drafts.buttons.length > 0) {
+        buttons = drafts.buttons;
+    }
     renderButtonsList();
-
-    // Auto-load buttons from GitHub config on page open
     loadFromGitHub(true);
+
+    // Warn before leaving with unpublished changes
+    window.addEventListener('beforeunload', function(e) {
+        if (hasUnpublishedChanges()) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 </script>
 
 </body>
