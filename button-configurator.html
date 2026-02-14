@@ -190,6 +190,7 @@
         .badge-dropdown { background: #e3f2fd; color: #1565c0; }
         .badge-link { background: #e8f5e9; color: #2e7d32; }
         .badge-tag { background: #fff3e0; color: #e65100; }
+        .badge-toggle { background: #f3e8ff; color: #7c3aed; }
         .badge-published { background: #e8f5e9; color: #2e7d32; }
         .badge-modified { background: #fff3e0; color: #e65100; }
         .badge-draft { background: #e3f2fd; color: #1565c0; }
@@ -456,6 +457,42 @@
         }
         .ghl-settings-btn:hover { background: #e8e8e8; }
 
+        .ghl-toggle-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+        }
+        .ghl-toggle-track {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            background: #cbd5e1;
+            border-radius: 20px;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .ghl-toggle-track.on { background: #3b82f6; }
+        .ghl-toggle-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+        .ghl-toggle-track.on .ghl-toggle-thumb { transform: translateX(16px); }
+
         /* ========== CODE TAB ========== */
         .code-section {
             background: #fff;
@@ -688,11 +725,26 @@
                     <option value="dropdown">Dropdown (multiple options)</option>
                     <option value="link">Standalone Link</option>
                     <option value="tag">Standalone Tag</option>
+                    <option value="toggle">Toggle (on/off switch)</option>
                 </select>
             </div>
             <div class="field-group" id="new-btn-value-group" style="display:none;">
                 <label id="new-btn-value-label">Value</label>
                 <input type="text" id="new-btn-value" placeholder="">
+            </div>
+            <div id="new-btn-toggle-group" style="display:none;">
+                <div class="field-group">
+                    <label>Custom Field Name</label>
+                    <input type="text" id="new-btn-field-name" placeholder="e.g. Bot Status">
+                </div>
+                <div class="field-group">
+                    <label>ON Value</label>
+                    <input type="text" id="new-btn-on-value" placeholder="e.g. bot on">
+                </div>
+                <div class="field-group">
+                    <label>OFF Value</label>
+                    <input type="text" id="new-btn-off-value" placeholder="e.g. bot off">
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -748,6 +800,20 @@
             <div class="field-group" id="edit-btn-value-group" style="display:none;">
                 <label id="edit-btn-value-label">Value</label>
                 <input type="text" id="edit-btn-value" placeholder="">
+            </div>
+            <div id="edit-btn-toggle-group" style="display:none;">
+                <div class="field-group">
+                    <label>Custom Field Name</label>
+                    <input type="text" id="edit-btn-field-name" placeholder="e.g. Bot Status">
+                </div>
+                <div class="field-group">
+                    <label>ON Value</label>
+                    <input type="text" id="edit-btn-on-value" placeholder="e.g. bot on">
+                </div>
+                <div class="field-group">
+                    <label>OFF Value</label>
+                    <input type="text" id="edit-btn-off-value" placeholder="e.g. bot off">
+                </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -955,6 +1021,9 @@
         document.getElementById('new-btn-name').value = '';
         document.getElementById('new-btn-type').value = 'dropdown';
         document.getElementById('new-btn-value').value = '';
+        document.getElementById('new-btn-field-name').value = '';
+        document.getElementById('new-btn-on-value').value = '';
+        document.getElementById('new-btn-off-value').value = '';
         onBtnTypeChange();
         openModal('modal-add-button');
     }
@@ -964,13 +1033,16 @@
         var valGroup = document.getElementById('new-btn-value-group');
         var valLabel = document.getElementById('new-btn-value-label');
         var valInput = document.getElementById('new-btn-value');
-        if (type === 'dropdown') {
-            valGroup.style.display = 'none';
-        } else if (type === 'link') {
+        var toggleGroup = document.getElementById('new-btn-toggle-group');
+        valGroup.style.display = 'none';
+        toggleGroup.style.display = 'none';
+        if (type === 'link') {
             valGroup.style.display = 'block';
             valLabel.textContent = 'URL';
             valInput.placeholder = 'https://example.com';
-        } else {
+        } else if (type === 'toggle') {
+            toggleGroup.style.display = 'block';
+        } else if (type === 'tag') {
             valGroup.style.display = 'block';
             valLabel.textContent = 'Tag Name';
             valInput.placeholder = 'e.g. hot-lead';
@@ -982,16 +1054,26 @@
         var type = document.getElementById('new-btn-type').value;
         var value = document.getElementById('new-btn-value').value.trim();
         if (!name) { showNotification('Please enter a button name.'); return; }
-        if (type !== 'dropdown' && !value) { showNotification('Please enter a value.'); return; }
 
         var btn = {
             id: generateId('btn'),
             name: name,
             type: type
         };
-        if (type === 'dropdown') {
+        if (type === 'toggle') {
+            var fieldName = document.getElementById('new-btn-field-name').value.trim();
+            var onValue = document.getElementById('new-btn-on-value').value.trim();
+            var offValue = document.getElementById('new-btn-off-value').value.trim();
+            if (!fieldName) { showNotification('Please enter the custom field name.'); return; }
+            if (!onValue) { showNotification('Please enter the ON value.'); return; }
+            if (!offValue) { showNotification('Please enter the OFF value.'); return; }
+            btn.fieldName = fieldName;
+            btn.onValue = onValue;
+            btn.offValue = offValue;
+        } else if (type === 'dropdown') {
             btn.options = [];
         } else {
+            if (!value) { showNotification('Please enter a value.'); return; }
             btn.value = value;
         }
         buttons.push(btn);
@@ -1058,13 +1140,19 @@
         var valGroup = document.getElementById('edit-btn-value-group');
         var valLabel = document.getElementById('edit-btn-value-label');
         var valInput = document.getElementById('edit-btn-value');
-        if (btn.type === 'dropdown') {
-            valGroup.style.display = 'none';
+        var toggleGroup = document.getElementById('edit-btn-toggle-group');
+        valGroup.style.display = 'none';
+        toggleGroup.style.display = 'none';
+        if (btn.type === 'toggle') {
+            toggleGroup.style.display = 'block';
+            document.getElementById('edit-btn-field-name').value = btn.fieldName || '';
+            document.getElementById('edit-btn-on-value').value = btn.onValue || '';
+            document.getElementById('edit-btn-off-value').value = btn.offValue || '';
         } else if (btn.type === 'link') {
             valGroup.style.display = 'block';
             valLabel.textContent = 'URL';
             valInput.value = btn.value || '';
-        } else {
+        } else if (btn.type !== 'dropdown') {
             valGroup.style.display = 'block';
             valLabel.textContent = 'Tag Name';
             valInput.value = btn.value || '';
@@ -1078,7 +1166,17 @@
         var name = document.getElementById('edit-btn-name').value.trim();
         if (!name) { showNotification('Please enter a button name.'); return; }
         btn.name = name;
-        if (btn.type !== 'dropdown') {
+        if (btn.type === 'toggle') {
+            var fieldName = document.getElementById('edit-btn-field-name').value.trim();
+            var onValue = document.getElementById('edit-btn-on-value').value.trim();
+            var offValue = document.getElementById('edit-btn-off-value').value.trim();
+            if (!fieldName) { showNotification('Please enter the custom field name.'); return; }
+            if (!onValue) { showNotification('Please enter the ON value.'); return; }
+            if (!offValue) { showNotification('Please enter the OFF value.'); return; }
+            btn.fieldName = fieldName;
+            btn.onValue = onValue;
+            btn.offValue = offValue;
+        } else if (btn.type !== 'dropdown') {
             var value = document.getElementById('edit-btn-value').value.trim();
             if (!value) { showNotification('Please enter a value.'); return; }
             btn.value = value;
@@ -1384,7 +1482,9 @@
             html += '<span class="badge ' + badgeClass + '">' + typeLabel + '</span>';
             html += '<span class="badge ' + statusBadgeClass + '">' + statusLabel + '</span>';
             html += '<h3>' + escapeHtml(btn.name) + '</h3>';
-            if (btn.type !== 'dropdown' && btn.value) {
+            if (btn.type === 'toggle') {
+                html += '<span class="meta">' + escapeHtml(btn.fieldName) + ': ' + escapeHtml(btn.onValue) + ' / ' + escapeHtml(btn.offValue) + '</span>';
+            } else if (btn.type !== 'dropdown' && btn.value) {
                 html += '<span class="meta">' + escapeHtml(btn.value) + '</span>';
             }
             if (btn.type === 'dropdown') {
@@ -1396,7 +1496,7 @@
             html += '</div>';
             html += '<div class="card-actions">';
             html += '<button title="Always visible" onclick="event.stopPropagation();">&#128065;</button>';
-            if (btn.type !== 'dropdown') {
+            if (btn.type !== 'dropdown' && btn.type !== 'toggle') {
                 html += '<button onclick="event.stopPropagation();openManageFormModal(\'' + btn.id + '\');" title="Popup Form" style="color:#7c3aed;">&#128203;</button>';
             }
             html += '<button onclick="event.stopPropagation();openEditButtonModal(\'' + btn.id + '\');" title="Edit">&#9998;</button>';
@@ -1434,6 +1534,13 @@
                 }
                 html += '<div style="margin-top:14px;"><button class="btn-outline" onclick="openAddOptionModal(\'' + btn.id + '\')">+ Add Option</button></div>';
                 html += '</div>';
+            } else if (btn.type === 'toggle') {
+                html += '<div class="field-group"><label>Custom Field Name</label>';
+                html += '<input type="text" value="' + escapeHtml(btn.fieldName || '') + '" onchange="updateToggleField(\'' + btn.id + '\', \'fieldName\', this.value)"></div>';
+                html += '<div class="field-group"><label>ON Value</label>';
+                html += '<input type="text" value="' + escapeHtml(btn.onValue || '') + '" onchange="updateToggleField(\'' + btn.id + '\', \'onValue\', this.value)"></div>';
+                html += '<div class="field-group"><label>OFF Value</label>';
+                html += '<input type="text" value="' + escapeHtml(btn.offValue || '') + '" onchange="updateToggleField(\'' + btn.id + '\', \'offValue\', this.value)"></div>';
             } else if (btn.type === 'link') {
                 html += '<div class="field-group"><label>URL</label>';
                 html += '<input type="text" value="' + escapeHtml(btn.value || '') + '" onchange="updateButtonValue(\'' + btn.id + '\', this.value)"></div>';
@@ -1476,6 +1583,14 @@
         }
     }
 
+    function updateToggleField(btnId, prop, newValue) {
+        var btn = findButton(btnId);
+        if (btn && btn.type === 'toggle') {
+            btn[prop] = newValue.trim();
+            persistDrafts();
+        }
+    }
+
     /* =============================================================
        PREVIEW
        ============================================================= */
@@ -1514,6 +1629,14 @@
                     }
                 }
                 html += '</div></div>';
+            } else if (btn.type === 'toggle') {
+                html += '<div class="ghl-toggle-wrapper" onclick="togglePreviewSwitch(\'' + btn.id + '\')">';
+                html += '<span class="type-icon" style="color:#7c3aed;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg></span>';
+                html += escapeHtml(btn.name);
+                html += '<div class="ghl-toggle-track" id="preview-toggle-' + btn.id + '">';
+                html += '<div class="ghl-toggle-thumb"></div>';
+                html += '</div>';
+                html += '</div>';
             } else if (btn.type === 'link') {
                 html += '<button class="ghl-btn" onclick="previewFormPopup(\'' + btn.id + '\')">';
                 html += '<span class="type-icon link-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg></span>';
@@ -1540,6 +1663,18 @@
         var menu = document.getElementById('preview-dd-' + btnId);
         if (menu) {
             menu.classList.toggle('show');
+        }
+    }
+
+    function togglePreviewSwitch(btnId) {
+        var track = document.getElementById('preview-toggle-' + btnId);
+        if (track) {
+            track.classList.toggle('on');
+            var isOn = track.classList.contains('on');
+            var btn = findButton(btnId);
+            if (btn) {
+                showNotification('Preview: ' + btn.fieldName + ' = ' + (isOn ? btn.onValue : btn.offValue));
+            }
         }
     }
 
@@ -1646,6 +1781,14 @@
                 name: 'Mark Hot Lead',
                 type: 'tag',
                 value: 'hot-lead'
+            },
+            {
+                id: generateId('btn'),
+                name: 'Bot',
+                type: 'toggle',
+                fieldName: 'Bot Status',
+                onValue: 'bot on',
+                offValue: 'bot off'
             }
         ];
         persistDrafts();
@@ -1660,7 +1803,8 @@
         return {
             dropdown: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>',
             link: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>',
-            tag: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>'
+            tag: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>',
+            toggle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>'
         };
     }
 
@@ -1719,7 +1863,14 @@
             '.gcb-form-btn-cancel:hover { background:#e2e8f0; }',
             '.gcb-form-btn-submit { background:#3b82f6;color:#fff; }',
             '.gcb-form-btn-submit:hover { background:#2563eb; }',
-            '.gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }'
+            '.gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }',
+            '.gcb-icon-toggle svg { color:#7c3aed; }',
+            '.gcb-toggle-container { display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit; }',
+            '.gcb-toggle-container:hover { border-color:#9ca3af; }',
+            '.gcb-toggle-track { position:relative;width:36px;height:20px;background:#cbd5e1;border-radius:20px;transition:background 0.2s;flex-shrink:0; }',
+            '.gcb-toggle-track.gcb-on { background:#3b82f6; }',
+            '.gcb-toggle-thumb { position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15); }',
+            '.gcb-toggle-track.gcb-on .gcb-toggle-thumb { transform:translateX(16px); }'
         ].join('\n');
     }
 
@@ -1752,6 +1903,10 @@
                         entry.options.push(optEntry);
                     }
                 }
+            } else if (btn.type === 'toggle') {
+                entry.fieldName = btn.fieldName;
+                entry.onValue = btn.onValue;
+                entry.offValue = btn.offValue;
             } else {
                 entry.value = btn.value;
             }
@@ -2046,7 +2201,14 @@
         lines.push('                ".gcb-form-btn-cancel:hover { background:#e2e8f0; }",');
         lines.push('                ".gcb-form-btn-submit { background:#3b82f6;color:#fff; }",');
         lines.push('                ".gcb-form-btn-submit:hover { background:#2563eb; }",');
-        lines.push('                ".gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }"');
+        lines.push('                ".gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }",');
+        lines.push('                ".gcb-icon-toggle svg { color:#7c3aed; }",');
+        lines.push('                ".gcb-toggle-container { display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('                ".gcb-toggle-container:hover { border-color:#9ca3af; }",');
+        lines.push('                ".gcb-toggle-track { position:relative;width:36px;height:20px;background:#cbd5e1;border-radius:20px;transition:background 0.2s;flex-shrink:0; }",');
+        lines.push('                ".gcb-toggle-track.gcb-on { background:#3b82f6; }",');
+        lines.push('                ".gcb-toggle-thumb { position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15); }",');
+        lines.push('                ".gcb-toggle-track.gcb-on .gcb-toggle-thumb { transform:translateX(16px); }"');
         lines.push('            ].join("\\n");');
         lines.push('        }');
         lines.push('        document.head.appendChild(style);');
@@ -2485,6 +2647,7 @@
         lines.push('        var SVG_DROPDOWN = (CUSTOM_ICONS && CUSTOM_ICONS.dropdown) ? CUSTOM_ICONS.dropdown : \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>\';');
         lines.push('        var SVG_LINK = (CUSTOM_ICONS && CUSTOM_ICONS.link) ? CUSTOM_ICONS.link : \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>\';');
         lines.push('        var SVG_TAG = (CUSTOM_ICONS && CUSTOM_ICONS.tag) ? CUSTOM_ICONS.tag : \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>\';');
+        lines.push('        var SVG_TOGGLE = (CUSTOM_ICONS && CUSTOM_ICONS.toggle) ? CUSTOM_ICONS.toggle : \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>\';');
         lines.push('');
         lines.push('        function makeIcon(cls, svg) {');
         lines.push('            var span = document.createElement("span");');
@@ -2584,6 +2747,61 @@
         lines.push('                        }');
         lines.push('                    });');
         lines.push('                    container.appendChild(button);');
+        lines.push('                })(btn);');
+        lines.push('');
+        lines.push('            } else if (btn.type === "toggle") {');
+        lines.push('                (function(b) {');
+        lines.push('                    var wrapper = document.createElement("div");');
+        lines.push('                    wrapper.className = "gcb-toggle-container";');
+        lines.push('                    wrapper.appendChild(makeIcon("gcb-icon-toggle", SVG_TOGGLE));');
+        lines.push('                    wrapper.appendChild(document.createTextNode(b.name));');
+        lines.push('');
+        lines.push('                    var track = document.createElement("div");');
+        lines.push('                    track.className = "gcb-toggle-track";');
+        lines.push('                    var thumb = document.createElement("div");');
+        lines.push('                    thumb.className = "gcb-toggle-thumb";');
+        lines.push('                    track.appendChild(thumb);');
+        lines.push('');
+        lines.push('                    function readCurrentState() {');
+        lines.push('                        var labels = document.querySelectorAll("label");');
+        lines.push('                        for (var li = 0; li < labels.length; li++) {');
+        lines.push('                            if (labels[li].textContent.trim().toLowerCase() === b.fieldName.toLowerCase()) {');
+        lines.push('                                var parent = labels[li].closest(".form-group") || labels[li].parentElement;');
+        lines.push('                                var sel = parent.querySelector("select");');
+        lines.push('                                if (sel && sel.value.toLowerCase() === b.onValue.toLowerCase()) {');
+        lines.push('                                    return true;');
+        lines.push('                                }');
+        lines.push('                                return false;');
+        lines.push('                            }');
+        lines.push('                        }');
+        lines.push('                        try {');
+        lines.push('                            var stored = localStorage.getItem("gcb_toggle_" + b.id);');
+        lines.push('                            if (stored === "on") return true;');
+        lines.push('                        } catch(e) {}');
+        lines.push('                        return false;');
+        lines.push('                    }');
+        lines.push('');
+        lines.push('                    var isOn = readCurrentState();');
+        lines.push('                    if (isOn) track.classList.add("gcb-on");');
+        lines.push('');
+        lines.push('                    wrapper.addEventListener("click", function() {');
+        lines.push('                        isOn = !isOn;');
+        lines.push('                        if (isOn) {');
+        lines.push('                            track.classList.add("gcb-on");');
+        lines.push('                            setCustomFieldValue(b.fieldName, b.onValue);');
+        lines.push('                            showNotification(b.name + ": " + b.onValue);');
+        lines.push('                        } else {');
+        lines.push('                            track.classList.remove("gcb-on");');
+        lines.push('                            setCustomFieldValue(b.fieldName, b.offValue);');
+        lines.push('                            showNotification(b.name + ": " + b.offValue);');
+        lines.push('                        }');
+        lines.push('                        try {');
+        lines.push('                            localStorage.setItem("gcb_toggle_" + b.id, isOn ? "on" : "off");');
+        lines.push('                        } catch(e) {}');
+        lines.push('                    });');
+        lines.push('');
+        lines.push('                    wrapper.appendChild(track);');
+        lines.push('                    container.appendChild(wrapper);');
         lines.push('                })(btn);');
         lines.push('            }');
         lines.push('        }');
