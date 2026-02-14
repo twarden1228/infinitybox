@@ -379,12 +379,13 @@
             color: #374151;
         }
         .ghl-btn:hover { background: #f9fafb; border-color: #9ca3af; }
-        .ghl-btn .type-dot {
-            width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+        .ghl-btn .type-icon {
+            width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .ghl-btn .type-dot.dropdown-dot { background: #1565c0; }
-        .ghl-btn .type-dot.link-dot { background: #2e7d32; }
-        .ghl-btn .type-dot.tag-dot { background: #e65100; }
+        .ghl-btn .type-icon svg { width: 14px; height: 14px; }
+        .ghl-btn .type-icon.dropdown-icon svg { color: #3b82f6; }
+        .ghl-btn .type-icon.link-icon svg { color: #10b981; }
+        .ghl-btn .type-icon.tag-icon svg { color: #f59e0b; }
         .ghl-btn .arrow { font-size: 10px; margin-left: 2px; }
 
         .ghl-dropdown-menu {
@@ -555,6 +556,7 @@
         <p style="font-size:12px;color:#999;margin-top:8px;">Create a token at GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens (classic) with <code>public_repo</code> scope. This lets the configurator save the JSON config directly to the repo so you never have to manually update it.</p>
     </div>
     <div style="margin-bottom: 16px;">
+        <button class="btn-outline" onclick="loadFromGitHub()">&#128229; Load from GitHub</button>
         <button class="btn-outline" onclick="loadExample()">Load Example Data</button>
     </div>
     <div id="buttons-list">
@@ -1018,7 +1020,7 @@
             if (btn.type === 'dropdown') {
                 html += '<div style="position:relative;display:inline-block;">';
                 html += '<button class="ghl-btn" onclick="togglePreviewDropdown(\'' + btn.id + '\')">';
-                html += '<span class="type-dot dropdown-dot"></span>';
+                html += '<span class="type-icon dropdown-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg></span>';
                 html += escapeHtml(btn.name);
                 html += '<span class="arrow">&#9662;</span>';
                 html += '</button>';
@@ -1026,9 +1028,12 @@
                 if (btn.options) {
                     for (var j = 0; j < btn.options.length; j++) {
                         var opt = btn.options[j];
-                        var dotClass = opt.type === 'link' ? 'link-dot' : 'tag-dot';
+                        var iconClass = opt.type === 'link' ? 'link-icon' : 'tag-icon';
+                        var iconSvg = opt.type === 'link'
+                            ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>'
+                            : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>';
                         html += '<div class="ghl-dropdown-item">';
-                        html += '<span class="type-dot ' + dotClass + '"></span>';
+                        html += '<span class="type-icon ' + iconClass + '">' + iconSvg + '</span>';
                         html += escapeHtml(opt.name);
                         html += '</div>';
                     }
@@ -1036,12 +1041,12 @@
                 html += '</div></div>';
             } else if (btn.type === 'link') {
                 html += '<button class="ghl-btn">';
-                html += '<span class="type-dot link-dot"></span>';
+                html += '<span class="type-icon link-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg></span>';
                 html += escapeHtml(btn.name);
                 html += '</button>';
             } else {
                 html += '<button class="ghl-btn">';
-                html += '<span class="type-dot tag-dot"></span>';
+                html += '<span class="type-icon tag-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg></span>';
                 html += escapeHtml(btn.name);
                 html += '</button>';
             }
@@ -1100,22 +1105,63 @@
     }
 
     /* =============================================================
-       GENERATE CODE
+       SHARED HELPERS
        ============================================================= */
-    function generateCode() {
-        if (buttons.length === 0) {
-            showNotification('Add at least one button first.');
-            return;
-        }
+    function getDefaultIcons() {
+        return {
+            dropdown: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>',
+            link: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>',
+            tag: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>'
+        };
+    }
 
-        var configUrl = document.getElementById('config-url').value.trim();
-        if (!configUrl) {
-            showNotification('Please enter a Config URL where you will host the JSON file.');
-            return;
-        }
+    function buildDefaultCSS() {
+        return [
+            '#ghl-custom-buttons-container { display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:flex-start; }',
+            '.gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit; }',
+            '.gcb-btn:hover { background:#f9fafb;border-color:#9ca3af; }',
+            '.gcb-icon { width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0; }',
+            '.gcb-icon svg { width:14px;height:14px; }',
+            '.gcb-icon-dropdown svg { color:#3b82f6; }',
+            '.gcb-icon-link svg { color:#10b981; }',
+            '.gcb-icon-tag svg { color:#f59e0b; }',
+            '.gcb-arrow { font-size:10px;margin-left:2px; }',
+            '.gcb-dropdown { display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:10001;margin-top:4px;overflow:hidden; }',
+            '.gcb-dropdown.gcb-open { display:block; }',
+            '.gcb-dd-item { padding:10px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s; }',
+            '.gcb-dd-item:hover { background:#f1f5f9; }',
+            '.gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:13px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s; }',
+            '.gcb-settings-btn:hover { background:#e2e8f0; }',
+            '.gcb-panel-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:10002; }',
+            '.gcb-panel-overlay.gcb-open { display:block; }',
+            '.gcb-panel { position:fixed;top:0;right:-360px;width:340px;height:100%;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.1);z-index:10003;transition:right 0.25s;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; }',
+            '.gcb-panel.gcb-open { right:0; }',
+            '.gcb-panel-header { padding:20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between; }',
+            '.gcb-panel-header h3 { font-size:16px;font-weight:600;margin:0; }',
+            '.gcb-panel-close { background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;padding:4px; }',
+            '.gcb-panel-body { padding:20px; }',
+            '.gcb-toggle-row { display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9; }',
+            '.gcb-toggle-label { font-size:14px;font-weight:500; }',
+            '.gcb-toggle-type { font-size:11px;color:#94a3b8;text-transform:uppercase; }',
+            '.gcb-switch { position:relative;width:44px;height:24px;flex-shrink:0; }',
+            '.gcb-switch input { opacity:0;width:0;height:0; }',
+            '.gcb-slider { position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;transition:0.2s; }',
+            ".gcb-slider:before { content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s; }",
+            '.gcb-switch input:checked + .gcb-slider { background:#3b82f6; }',
+            '.gcb-switch input:checked + .gcb-slider:before { transform:translateX(20px); }',
+            '.gcb-notif { position:fixed;bottom:24px;right:24px;padding:12px 20px;background:#1e293b;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:10010;opacity:0;transform:translateY(10px);transition:all 0.3s;font-family:inherit; }',
+            '.gcb-notif.gcb-show { opacity:1;transform:translateY(0); }',
+            '.gcb-notif-error { background:#dc2626; }'
+        ].join('\n');
+    }
 
-        // Build a clean config array for the JSON output
+    function buildConfigArray() {
         var config = [];
+        config.push({
+            __meta: true,
+            css: buildDefaultCSS(),
+            icons: getDefaultIcons()
+        });
         for (var i = 0; i < buttons.length; i++) {
             var btn = buttons[i];
             var entry = {
@@ -1141,7 +1187,76 @@
             }
             config.push(entry);
         }
+        return config;
+    }
 
+    /* =============================================================
+       LOAD FROM GITHUB
+       ============================================================= */
+    function loadFromGitHub(silent) {
+        var configUrl = document.getElementById('config-url').value.trim();
+        if (!configUrl) {
+            if (!silent) showNotification('Please enter a Config URL first.');
+            return;
+        }
+
+        var cacheBuster = '_cb=' + new Date().getTime();
+        var separator = configUrl.indexOf('?') !== -1 ? '&' : '?';
+        var url = configUrl + separator + cacheBuster;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.timeout = 10000;
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== 4) return;
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data && data.length) {
+                        var btnData = data;
+                        if (data[0] && data[0].__meta) {
+                            btnData = data.slice(1);
+                        }
+                        if (btnData.length > 0) {
+                            buttons = btnData;
+                            renderButtonsList();
+                            if (!silent) showNotification('Loaded ' + btnData.length + ' button(s) from config.');
+                            return;
+                        }
+                    }
+                    if (!silent) showNotification('Config is empty — no buttons to load.');
+                } catch(e) {
+                    if (!silent) showNotification('Error parsing config JSON.');
+                }
+            } else {
+                if (!silent) showNotification('Could not fetch config (HTTP ' + xhr.status + ').');
+            }
+        };
+        xhr.ontimeout = function() {
+            if (!silent) showNotification('Config fetch timed out.');
+        };
+        xhr.onerror = function() {
+            if (!silent) showNotification('Network error fetching config.');
+        };
+        xhr.send();
+    }
+
+    /* =============================================================
+       GENERATE CODE
+       ============================================================= */
+    function generateCode() {
+        if (buttons.length === 0) {
+            showNotification('Add at least one button first.');
+            return;
+        }
+
+        var configUrl = document.getElementById('config-url').value.trim();
+        if (!configUrl) {
+            showNotification('Please enter a Config URL where you will host the JSON file.');
+            return;
+        }
+
+        var config = buildConfigArray();
         var configJSON = JSON.stringify(config, null, 4);
 
         // Generate the static script (same every time for the same URL)
@@ -1173,6 +1288,8 @@
         lines.push('    var CONFIG_URL = "' + escapedUrl + '";');
         lines.push('    var CONFIG_CACHE_KEY = "ghl_custom_buttons_config";');
         lines.push('    var AVAILABLE_BUTTONS = [];');
+        lines.push('    var CUSTOM_ICONS = null;');
+        lines.push('    var CUSTOM_CSS = null;');
         lines.push('');
         lines.push('    // ---- CONSTANTS ----');
         lines.push('    var STORAGE_KEY = "ghl_custom_buttons_prefs";');
@@ -1200,8 +1317,15 @@
         lines.push('                try {');
         lines.push('                    var data = JSON.parse(xhr.responseText);');
         lines.push('                    if (data && data.length) {');
-        lines.push('                        AVAILABLE_BUTTONS = data;');
-        lines.push('                        console.log("[GHL Buttons] Config loaded: " + data.length + " buttons.");');
+        lines.push('                        if (data[0] && data[0].__meta) {');
+        lines.push('                            var meta = data[0];');
+        lines.push('                            if (meta.icons) CUSTOM_ICONS = meta.icons;');
+        lines.push('                            if (meta.css) CUSTOM_CSS = meta.css;');
+        lines.push('                            AVAILABLE_BUTTONS = data.slice(1);');
+        lines.push('                        } else {');
+        lines.push('                            AVAILABLE_BUTTONS = data;');
+        lines.push('                        }');
+        lines.push('                        console.log("[GHL Buttons] Config loaded: " + AVAILABLE_BUTTONS.length + " buttons.");');
         lines.push('                        try {');
         lines.push('                            localStorage.setItem(CONFIG_CACHE_KEY, xhr.responseText);');
         lines.push('                        } catch(e) {');
@@ -1237,8 +1361,15 @@
         lines.push('            if (raw) {');
         lines.push('                var data = JSON.parse(raw);');
         lines.push('                if (data && data.length) {');
-        lines.push('                    AVAILABLE_BUTTONS = data;');
-        lines.push('                    console.log("[GHL Buttons] Loaded cached config: " + data.length + " buttons.");');
+        lines.push('                    if (data[0] && data[0].__meta) {');
+        lines.push('                        var meta = data[0];');
+        lines.push('                        if (meta.icons) CUSTOM_ICONS = meta.icons;');
+        lines.push('                        if (meta.css) CUSTOM_CSS = meta.css;');
+        lines.push('                        AVAILABLE_BUTTONS = data.slice(1);');
+        lines.push('                    } else {');
+        lines.push('                        AVAILABLE_BUTTONS = data;');
+        lines.push('                    }');
+        lines.push('                    console.log("[GHL Buttons] Loaded cached config: " + AVAILABLE_BUTTONS.length + " buttons.");');
         lines.push('                    return;');
         lines.push('                }');
         lines.push('            }');
@@ -1253,42 +1384,47 @@
         lines.push('        if (document.getElementById("ghl-custom-btn-styles")) return;');
         lines.push('        var style = document.createElement("style");');
         lines.push('        style.id = "ghl-custom-btn-styles";');
-        lines.push('        style.textContent = [');
-        lines.push('            "#" + CONTAINER_ID + " { display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:flex-start; }",');
-        lines.push('            ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit; }",');
-        lines.push('            ".gcb-btn:hover { background:#f9fafb;border-color:#9ca3af; }",');
-        lines.push('            ".gcb-dot { width:8px;height:8px;border-radius:50%;display:inline-block; }",');
-        lines.push('            ".gcb-dot-dropdown { background:#3b82f6; }",');
-        lines.push('            ".gcb-dot-link { background:#10b981; }",');
-        lines.push('            ".gcb-dot-tag { background:#f59e0b; }",');
-        lines.push('            ".gcb-arrow { font-size:10px;margin-left:2px; }",');
-        lines.push('            ".gcb-dropdown { display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:10001;margin-top:4px;overflow:hidden; }",');
-        lines.push('            ".gcb-dropdown.gcb-open { display:block; }",');
-        lines.push('            ".gcb-dd-item { padding:10px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s; }",');
-        lines.push('            ".gcb-dd-item:hover { background:#f1f5f9; }",');
-        lines.push('            ".gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:13px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s; }",');
-        lines.push('            ".gcb-settings-btn:hover { background:#e2e8f0; }",');
-        lines.push('            ".gcb-panel-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:10002; }",');
-        lines.push('            ".gcb-panel-overlay.gcb-open { display:block; }",');
-        lines.push('            ".gcb-panel { position:fixed;top:0;right:-360px;width:340px;height:100%;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.1);z-index:10003;transition:right 0.25s;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; }",');
-        lines.push('            ".gcb-panel.gcb-open { right:0; }",');
-        lines.push('            ".gcb-panel-header { padding:20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between; }",');
-        lines.push('            ".gcb-panel-header h3 { font-size:16px;font-weight:600;margin:0; }",');
-        lines.push('            ".gcb-panel-close { background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;padding:4px; }",');
-        lines.push('            ".gcb-panel-body { padding:20px; }",');
-        lines.push('            ".gcb-toggle-row { display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9; }",');
-        lines.push('            ".gcb-toggle-label { font-size:14px;font-weight:500; }",');
-        lines.push('            ".gcb-toggle-type { font-size:11px;color:#94a3b8;text-transform:uppercase; }",');
-        lines.push('            ".gcb-switch { position:relative;width:44px;height:24px;flex-shrink:0; }",');
-        lines.push('            ".gcb-switch input { opacity:0;width:0;height:0; }",');
-        lines.push('            ".gcb-slider { position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;transition:0.2s; }",');
-        lines.push("            \".gcb-slider:before { content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s; }\",");
-        lines.push('            ".gcb-switch input:checked + .gcb-slider { background:#3b82f6; }",');
-        lines.push('            ".gcb-switch input:checked + .gcb-slider:before { transform:translateX(20px); }",');
-        lines.push('            ".gcb-notif { position:fixed;bottom:24px;right:24px;padding:12px 20px;background:#1e293b;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:10010;opacity:0;transform:translateY(10px);transition:all 0.3s;font-family:inherit; }",');
-        lines.push('            ".gcb-notif.gcb-show { opacity:1;transform:translateY(0); }",');
-        lines.push('            ".gcb-notif-error { background:#dc2626; }"');
-        lines.push('        ].join("\\n");');
+        lines.push('        if (CUSTOM_CSS) {');
+        lines.push('            style.textContent = CUSTOM_CSS;');
+        lines.push('        } else {');
+        lines.push('            style.textContent = [');
+        lines.push('                "#" + CONTAINER_ID + " { display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:flex-start; }",');
+        lines.push('                ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('                ".gcb-btn:hover { background:#f9fafb;border-color:#9ca3af; }",');
+        lines.push('                ".gcb-icon { width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0; }",');
+        lines.push('                ".gcb-icon svg { width:14px;height:14px; }",');
+        lines.push('                ".gcb-icon-dropdown svg { color:#3b82f6; }",');
+        lines.push('                ".gcb-icon-link svg { color:#10b981; }",');
+        lines.push('                ".gcb-icon-tag svg { color:#f59e0b; }",');
+        lines.push('                ".gcb-arrow { font-size:10px;margin-left:2px; }",');
+        lines.push('                ".gcb-dropdown { display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:10001;margin-top:4px;overflow:hidden; }",');
+        lines.push('                ".gcb-dropdown.gcb-open { display:block; }",');
+        lines.push('                ".gcb-dd-item { padding:10px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s; }",');
+        lines.push('                ".gcb-dd-item:hover { background:#f1f5f9; }",');
+        lines.push('                ".gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:13px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s; }",');
+        lines.push('                ".gcb-settings-btn:hover { background:#e2e8f0; }",');
+        lines.push('                ".gcb-panel-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:10002; }",');
+        lines.push('                ".gcb-panel-overlay.gcb-open { display:block; }",');
+        lines.push('                ".gcb-panel { position:fixed;top:0;right:-360px;width:340px;height:100%;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.1);z-index:10003;transition:right 0.25s;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; }",');
+        lines.push('                ".gcb-panel.gcb-open { right:0; }",');
+        lines.push('                ".gcb-panel-header { padding:20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between; }",');
+        lines.push('                ".gcb-panel-header h3 { font-size:16px;font-weight:600;margin:0; }",');
+        lines.push('                ".gcb-panel-close { background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;padding:4px; }",');
+        lines.push('                ".gcb-panel-body { padding:20px; }",');
+        lines.push('                ".gcb-toggle-row { display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9; }",');
+        lines.push('                ".gcb-toggle-label { font-size:14px;font-weight:500; }",');
+        lines.push('                ".gcb-toggle-type { font-size:11px;color:#94a3b8;text-transform:uppercase; }",');
+        lines.push('                ".gcb-switch { position:relative;width:44px;height:24px;flex-shrink:0; }",');
+        lines.push('                ".gcb-switch input { opacity:0;width:0;height:0; }",');
+        lines.push('                ".gcb-slider { position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;transition:0.2s; }",');
+        lines.push("                \".gcb-slider:before { content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s; }\",");
+        lines.push('                ".gcb-switch input:checked + .gcb-slider { background:#3b82f6; }",');
+        lines.push('                ".gcb-switch input:checked + .gcb-slider:before { transform:translateX(20px); }",');
+        lines.push('                ".gcb-notif { position:fixed;bottom:24px;right:24px;padding:12px 20px;background:#1e293b;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:10010;opacity:0;transform:translateY(10px);transition:all 0.3s;font-family:inherit; }",');
+        lines.push('                ".gcb-notif.gcb-show { opacity:1;transform:translateY(0); }",');
+        lines.push('                ".gcb-notif-error { background:#dc2626; }"');
+        lines.push('            ].join("\\n");');
+        lines.push('        }');
         lines.push('        document.head.appendChild(style);');
         lines.push('    }');
         lines.push('');
@@ -1486,6 +1622,17 @@
         lines.push('        var container = document.createElement("div");');
         lines.push('        container.id = CONTAINER_ID;');
         lines.push('');
+        lines.push('        var SVG_DROPDOWN = (CUSTOM_ICONS && CUSTOM_ICONS.dropdown) ? CUSTOM_ICONS.dropdown : \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 5A.75.75 0 012.75 9h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 9.75zm0 5a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" clip-rule="evenodd"/></svg>\';');
+        lines.push('        var SVG_LINK = (CUSTOM_ICONS && CUSTOM_ICONS.link) ? CUSTOM_ICONS.link : \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z"/><path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 005.656 5.656l3-3a4 4 0 00-.225-5.865z"/></svg>\';');
+        lines.push('        var SVG_TAG = (CUSTOM_ICONS && CUSTOM_ICONS.tag) ? CUSTOM_ICONS.tag : \'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>\';');
+        lines.push('');
+        lines.push('        function makeIcon(cls, svg) {');
+        lines.push('            var span = document.createElement("span");');
+        lines.push('            span.className = "gcb-icon " + cls;');
+        lines.push('            span.innerHTML = svg;');
+        lines.push('            return span;');
+        lines.push('        }');
+        lines.push('');
         lines.push('        for (var i = 0; i < AVAILABLE_BUTTONS.length; i++) {');
         lines.push('            var btn = AVAILABLE_BUTTONS[i];');
         lines.push('            if (!isButtonEnabled(btn.id)) continue;');
@@ -1496,9 +1643,7 @@
         lines.push('');
         lines.push('                var button = document.createElement("button");');
         lines.push('                button.className = "gcb-btn";');
-        lines.push('                var dot = document.createElement("span");');
-        lines.push('                dot.className = "gcb-dot gcb-dot-dropdown";');
-        lines.push('                button.appendChild(dot);');
+        lines.push('                button.appendChild(makeIcon("gcb-icon-dropdown", SVG_DROPDOWN));');
         lines.push('                button.appendChild(document.createTextNode(btn.name));');
         lines.push('                var arrow = document.createElement("span");');
         lines.push('                arrow.className = "gcb-arrow";');
@@ -1522,9 +1667,8 @@
         lines.push('                        (function(opt) {');
         lines.push('                            var item = document.createElement("div");');
         lines.push('                            item.className = "gcb-dd-item";');
-        lines.push('                            var optDot = document.createElement("span");');
-        lines.push('                            optDot.className = "gcb-dot " + (opt.type === "link" ? "gcb-dot-link" : "gcb-dot-tag");');
-        lines.push('                            item.appendChild(optDot);');
+        lines.push('                            var optIcon = opt.type === "link" ? makeIcon("gcb-icon-link", SVG_LINK) : makeIcon("gcb-icon-tag", SVG_TAG);');
+        lines.push('                            item.appendChild(optIcon);');
         lines.push('                            item.appendChild(document.createTextNode(opt.name));');
         lines.push('                            item.addEventListener("click", function() {');
         lines.push('                                closeAllDropdowns();');
@@ -1547,9 +1691,7 @@
         lines.push('                (function(b) {');
         lines.push('                    var button = document.createElement("button");');
         lines.push('                    button.className = "gcb-btn";');
-        lines.push('                    var dot = document.createElement("span");');
-        lines.push('                    dot.className = "gcb-dot gcb-dot-link";');
-        lines.push('                    button.appendChild(dot);');
+        lines.push('                    button.appendChild(makeIcon("gcb-icon-link", SVG_LINK));');
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
         lines.push('                        window.open(b.value, "_blank");');
@@ -1561,9 +1703,7 @@
         lines.push('                (function(b) {');
         lines.push('                    var button = document.createElement("button");');
         lines.push('                    button.className = "gcb-btn";');
-        lines.push('                    var dot = document.createElement("span");');
-        lines.push('                    dot.className = "gcb-dot gcb-dot-tag";');
-        lines.push('                    button.appendChild(dot);');
+        lines.push('                    button.appendChild(makeIcon("gcb-icon-tag", SVG_TAG));');
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
         lines.push('                        addTagToContact(b.value);');
@@ -1719,25 +1859,7 @@
             return;
         }
 
-        // Build config JSON (same logic as generateCode)
-        var config = [];
-        for (var i = 0; i < buttons.length; i++) {
-            var btn = buttons[i];
-            var entry = { id: btn.id, name: btn.name, type: btn.type };
-            if (btn.type === 'dropdown') {
-                entry.options = [];
-                if (btn.options) {
-                    for (var j = 0; j < btn.options.length; j++) {
-                        var opt = btn.options[j];
-                        entry.options.push({ id: opt.id, name: opt.name, type: opt.type, value: opt.value });
-                    }
-                }
-            } else {
-                entry.value = btn.value;
-            }
-            config.push(entry);
-        }
-
+        var config = buildConfigArray();
         var configJSON = JSON.stringify(config, null, 4) + '\n';
         var contentBase64 = btoa(unescape(encodeURIComponent(configJSON)));
         var apiUrl = 'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + GITHUB_FILE_PATH;
@@ -1796,6 +1918,9 @@
 
     // Initial render
     renderButtonsList();
+
+    // Auto-load buttons from GitHub config on page open
+    loadFromGitHub(true);
 </script>
 
 </body>
