@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHL Custom Button Configurator</title>
+    <style>
+        /* ========== RESET & BASE ========== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            line-height: 1.5;
+        }
+
+        /* ========== LAYOUT ========== */
+        .app-header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .app-header h1 { font-size: 22px; font-weight: 600; }
+        .app-header p { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+
+        .tabs {
+            display: flex;
+            background: #fff;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 0 32px;
+        }
+        .tab-btn {
+            padding: 14px 24px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { color: #1a1a2e; }
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .tab-content { display: none; padding: 24px 32px; max-width: 960px; }
+        .tab-content.active { display: block; }
+
+        /* ========== CONFIGURE TAB ========== */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .toolbar button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #2563eb; }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .btn-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .btn-danger:hover { background: #fecaca; }
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+        }
+        .btn-success:hover { background: #059669; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state p { font-size: 15px; }
+
+        /* ---- Button Cards ---- */
+        .button-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .button-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .card-header-left { display: flex; align-items: center; gap: 12px; }
+        .card-header-left h3 { font-size: 15px; font-weight: 600; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-dropdown { background: #dbeafe; color: #2563eb; }
+        .badge-link { background: #d1fae5; color: #059669; }
+        .badge-tag { background: #fef3c7; color: #d97706; }
+
+        .card-actions { display: flex; gap: 8px; }
+        .card-actions button {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .card-actions button:hover { background: #f8fafc; }
+        .card-actions .delete-btn { color: #dc2626; border-color: #fecaca; }
+        .card-actions .delete-btn:hover { background: #fee2e2; }
+
+        .card-body {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .card-body.open { display: block; }
+
+        .field-group { margin-top: 14px; }
+        .field-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .field-group input, .field-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.15s;
+        }
+        .field-group input:focus, .field-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+        /* ---- Dropdown options list ---- */
+        .options-section { margin-top: 16px; }
+        .options-section h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 10px;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .option-item .opt-name { font-weight: 600; flex: 1; }
+        .option-item .opt-value { color: #64748b; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .option-item .opt-delete {
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 6px;
+        }
+
+        /* ========== MODAL ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 9000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            width: 480px;
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h2 { font-size: 18px; }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 4px;
+        }
+        .modal-body { padding: 24px; }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* ========== PREVIEW TAB ========== */
+        .preview-container {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .preview-header {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .preview-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        /* Simulated GHL buttons */
+        .ghl-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s;
+            color: #374151;
+        }
+        .ghl-btn:hover { background: #f9fafb; border-color: #9ca3af; }
+        .ghl-btn .type-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .ghl-btn .type-dot.dropdown-dot { background: #3b82f6; }
+        .ghl-btn .type-dot.link-dot { background: #10b981; }
+        .ghl-btn .type-dot.tag-dot { background: #f59e0b; }
+        .ghl-btn .arrow { font-size: 10px; margin-left: 2px; }
+
+        .ghl-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            min-width: 180px;
+            z-index: 1001;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        .ghl-dropdown-menu.show { display: block; }
+        .ghl-dropdown-item {
+            padding: 10px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.1s;
+        }
+        .ghl-dropdown-item:hover { background: #f1f5f9; }
+
+        .ghl-settings-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 6px;
+            background: #f8fafc;
+            font-size: 13px;
+            cursor: pointer;
+            color: #64748b;
+            transition: all 0.15s;
+        }
+        .ghl-settings-btn:hover { background: #e2e8f0; }
+
+        /* ========== CODE TAB ========== */
+        .code-output-area {
+            position: relative;
+        }
+        .code-output {
+            width: 100%;
+            min-height: 400px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #1e293b;
+            color: #e2e8f0;
+            resize: vertical;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .copy-btn:hover { background: #2563eb; }
+
+        /* ========== NOTIFICATION ========== */
+        .notif {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 22px;
+            background: #1e293b;
+            color: #fff;
+            border-radius: 10px;
+            font-size: 14px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 10000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+        }
+        .notif.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<div class="app-header">
+    <div>
+        <h1>GHL Custom Button Configurator</h1>
+        <p>Create custom buttons for GoHighLevel contact detail pages</p>
+    </div>
+</div>
+
+<!-- ==================== TABS ==================== -->
+<div class="tabs">
+    <button class="tab-btn active" data-tab="configure" onclick="switchTab('configure')">Configure</button>
+    <button class="tab-btn" data-tab="preview" onclick="switchTab('preview')">Preview</button>
+    <button class="tab-btn" data-tab="code" onclick="switchTab('code')">Generate Code</button>
+</div>
+
+<!-- ==================== CONFIGURE TAB ==================== -->
+<div id="tab-configure" class="tab-content active">
+    <div class="toolbar">
+        <button class="btn-primary" onclick="openAddButtonModal()">+ Add Button</button>
+        <button class="btn-secondary" onclick="loadExample()">Load Example</button>
+    </div>
+    <div id="buttons-list">
+        <div class="empty-state" id="empty-state">
+            <div class="icon">+</div>
+            <p>No buttons configured yet. Click "Add Button" to get started.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== PREVIEW TAB ==================== -->
+<div id="tab-preview" class="tab-content">
+    <div class="preview-container">
+        <div class="preview-header">Preview &mdash; This is how your buttons will look on GHL contact detail pages</div>
+        <div class="preview-buttons" id="preview-buttons"></div>
+    </div>
+</div>
+
+<!-- ==================== CODE TAB ==================== -->
+<div id="tab-code" class="tab-content">
+    <p style="margin-bottom: 16px; font-size: 14px; color: #64748b;">
+        Click "Generate Code" to create the injection script. Copy the output and paste it into
+        <strong>GHL &gt; Settings &gt; Custom Code &gt; Body</strong>.
+    </p>
+    <div class="toolbar">
+        <button class="btn-success" onclick="generateCode()">Generate Code</button>
+    </div>
+    <div class="code-output-area">
+        <textarea class="code-output" id="code-output" readonly placeholder="Click 'Generate Code' above to produce the injection script..."></textarea>
+        <button class="copy-btn" onclick="copyCode()">Copy</button>
+    </div>
+</div>
+
+<!-- ==================== ADD BUTTON MODAL ==================== -->
+<div class="modal-overlay" id="modal-add-button">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Add Button</h2>
+            <button class="modal-close" onclick="closeModal('modal-add-button')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Button Name</label>
+                <input type="text" id="new-btn-name" placeholder="e.g. Policy Status">
+            </div>
+            <div class="field-group">
+                <label>Button Type</label>
+                <select id="new-btn-type" onchange="onBtnTypeChange()">
+                    <option value="dropdown">Dropdown (multiple options)</option>
+                    <option value="link">Standalone Link</option>
+                    <option value="tag">Standalone Tag</option>
+                </select>
+            </div>
+            <div class="field-group" id="new-btn-value-group" style="display:none;">
+                <label id="new-btn-value-label">Value</label>
+                <input type="text" id="new-btn-value" placeholder="">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-add-button')">Cancel</button>
+            <button class="btn-primary" onclick="addButton()">Add Button</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== ADD OPTION MODAL ==================== -->
+<div class="modal-overlay" id="modal-add-option">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Add Option</h2>
+            <button class="modal-close" onclick="closeModal('modal-add-option')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Option Name</label>
+                <input type="text" id="new-opt-name" placeholder="e.g. Cancelled">
+            </div>
+            <div class="field-group">
+                <label>Option Type</label>
+                <select id="new-opt-type" onchange="onOptTypeChange()">
+                    <option value="tag">Tag (add tag to contact)</option>
+                    <option value="link">Link (open URL)</option>
+                </select>
+            </div>
+            <div class="field-group">
+                <label id="new-opt-value-label">Tag Name</label>
+                <input type="text" id="new-opt-value" placeholder="e.g. cancelled">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-add-option')">Cancel</button>
+            <button class="btn-primary" onclick="addOption()">Add Option</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== EDIT BUTTON MODAL ==================== -->
+<div class="modal-overlay" id="modal-edit-button">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Edit Button</h2>
+            <button class="modal-close" onclick="closeModal('modal-edit-button')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>Button Name</label>
+                <input type="text" id="edit-btn-name" placeholder="e.g. Policy Status">
+            </div>
+            <div class="field-group" id="edit-btn-value-group" style="display:none;">
+                <label id="edit-btn-value-label">Value</label>
+                <input type="text" id="edit-btn-value" placeholder="">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeModal('modal-edit-button')">Cancel</button>
+            <button class="btn-primary" onclick="saveEditButton()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== NOTIFICATION ==================== -->
+<div class="notif" id="notif"></div>
+
+<script>
+    /* =============================================================
+       STATE
+       ============================================================= */
+    var buttons = [];
+    var currentDropdownId = null; // for adding options
+    var editingButtonId = null;   // for editing
+    var idCounter = 1;
+
+    function generateId(prefix) {
+        idCounter++;
+        return prefix + '_' + Date.now() + '_' + idCounter;
+    }
+
+    /* =============================================================
+       TABS
+       ============================================================= */
+    function switchTab(tabName) {
+        var tabBtns = document.querySelectorAll('.tab-btn');
+        var tabContents = document.querySelectorAll('.tab-content');
+        for (var i = 0; i < tabBtns.length; i++) {
+            tabBtns[i].classList.remove('active');
+            if (tabBtns[i].getAttribute('data-tab') === tabName) {
+                tabBtns[i].classList.add('active');
+            }
+        }
+        for (var j = 0; j < tabContents.length; j++) {
+            tabContents[j].classList.remove('active');
+        }
+        document.getElementById('tab-' + tabName).classList.add('active');
+
+        if (tabName === 'preview') { renderPreview(); }
+    }
+
+    /* =============================================================
+       MODALS
+       ============================================================= */
+    function openModal(id) {
+        document.getElementById(id).classList.add('open');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+    }
+
+    /* =============================================================
+       ADD BUTTON MODAL
+       ============================================================= */
+    function openAddButtonModal() {
+        document.getElementById('new-btn-name').value = '';
+        document.getElementById('new-btn-type').value = 'dropdown';
+        document.getElementById('new-btn-value').value = '';
+        onBtnTypeChange();
+        openModal('modal-add-button');
+    }
+
+    function onBtnTypeChange() {
+        var type = document.getElementById('new-btn-type').value;
+        var valGroup = document.getElementById('new-btn-value-group');
+        var valLabel = document.getElementById('new-btn-value-label');
+        var valInput = document.getElementById('new-btn-value');
+        if (type === 'dropdown') {
+            valGroup.style.display = 'none';
+        } else if (type === 'link') {
+            valGroup.style.display = 'block';
+            valLabel.textContent = 'URL';
+            valInput.placeholder = 'https://example.com';
+        } else {
+            valGroup.style.display = 'block';
+            valLabel.textContent = 'Tag Name';
+            valInput.placeholder = 'e.g. hot-lead';
+        }
+    }
+
+    function addButton() {
+        var name = document.getElementById('new-btn-name').value.trim();
+        var type = document.getElementById('new-btn-type').value;
+        var value = document.getElementById('new-btn-value').value.trim();
+        if (!name) { showNotification('Please enter a button name.'); return; }
+        if (type !== 'dropdown' && !value) { showNotification('Please enter a value.'); return; }
+
+        var btn = {
+            id: generateId('btn'),
+            name: name,
+            type: type
+        };
+        if (type === 'dropdown') {
+            btn.options = [];
+        } else {
+            btn.value = value;
+        }
+        buttons.push(btn);
+        closeModal('modal-add-button');
+        renderButtonsList();
+        showNotification('Button added: ' + name);
+    }
+
+    /* =============================================================
+       ADD OPTION MODAL (for dropdown buttons)
+       ============================================================= */
+    function openAddOptionModal(btnId) {
+        currentDropdownId = btnId;
+        document.getElementById('new-opt-name').value = '';
+        document.getElementById('new-opt-type').value = 'tag';
+        document.getElementById('new-opt-value').value = '';
+        onOptTypeChange();
+        openModal('modal-add-option');
+    }
+
+    function onOptTypeChange() {
+        var type = document.getElementById('new-opt-type').value;
+        var label = document.getElementById('new-opt-value-label');
+        var input = document.getElementById('new-opt-value');
+        if (type === 'link') {
+            label.textContent = 'URL';
+            input.placeholder = 'https://example.com';
+        } else {
+            label.textContent = 'Tag Name';
+            input.placeholder = 'e.g. cancelled';
+        }
+    }
+
+    function addOption() {
+        var name = document.getElementById('new-opt-name').value.trim();
+        var type = document.getElementById('new-opt-type').value;
+        var value = document.getElementById('new-opt-value').value.trim();
+        if (!name) { showNotification('Please enter an option name.'); return; }
+        if (!value) { showNotification('Please enter a value.'); return; }
+
+        var btn = findButton(currentDropdownId);
+        if (!btn) return;
+        btn.options.push({
+            id: generateId('opt'),
+            name: name,
+            type: type,
+            value: value
+        });
+        closeModal('modal-add-option');
+        renderButtonsList();
+        showNotification('Option added: ' + name);
+    }
+
+    /* =============================================================
+       EDIT BUTTON MODAL
+       ============================================================= */
+    function openEditButtonModal(btnId) {
+        var btn = findButton(btnId);
+        if (!btn) return;
+        editingButtonId = btnId;
+        document.getElementById('edit-btn-name').value = btn.name;
+        var valGroup = document.getElementById('edit-btn-value-group');
+        var valLabel = document.getElementById('edit-btn-value-label');
+        var valInput = document.getElementById('edit-btn-value');
+        if (btn.type === 'dropdown') {
+            valGroup.style.display = 'none';
+        } else if (btn.type === 'link') {
+            valGroup.style.display = 'block';
+            valLabel.textContent = 'URL';
+            valInput.value = btn.value || '';
+        } else {
+            valGroup.style.display = 'block';
+            valLabel.textContent = 'Tag Name';
+            valInput.value = btn.value || '';
+        }
+        openModal('modal-edit-button');
+    }
+
+    function saveEditButton() {
+        var btn = findButton(editingButtonId);
+        if (!btn) return;
+        var name = document.getElementById('edit-btn-name').value.trim();
+        if (!name) { showNotification('Please enter a button name.'); return; }
+        btn.name = name;
+        if (btn.type !== 'dropdown') {
+            var value = document.getElementById('edit-btn-value').value.trim();
+            if (!value) { showNotification('Please enter a value.'); return; }
+            btn.value = value;
+        }
+        closeModal('modal-edit-button');
+        renderButtonsList();
+        showNotification('Button updated.');
+    }
+
+    /* =============================================================
+       HELPERS
+       ============================================================= */
+    function findButton(id) {
+        for (var i = 0; i < buttons.length; i++) {
+            if (buttons[i].id === id) return buttons[i];
+        }
+        return null;
+    }
+
+    function deleteButton(id) {
+        if (!confirm('Delete this button?')) return;
+        buttons = buttons.filter(function(b) { return b.id !== id; });
+        renderButtonsList();
+        showNotification('Button deleted.');
+    }
+
+    function deleteOption(btnId, optId) {
+        var btn = findButton(btnId);
+        if (!btn) return;
+        btn.options = btn.options.filter(function(o) { return o.id !== optId; });
+        renderButtonsList();
+    }
+
+    function toggleCardBody(btnId) {
+        var body = document.getElementById('card-body-' + btnId);
+        if (body) {
+            body.classList.toggle('open');
+        }
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    /* =============================================================
+       RENDER BUTTONS LIST (Configure tab)
+       ============================================================= */
+    function renderButtonsList() {
+        var container = document.getElementById('buttons-list');
+        var emptyState = document.getElementById('empty-state');
+
+        if (buttons.length === 0) {
+            container.innerHTML = '';
+            container.appendChild(createEmptyState());
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            var badgeClass = 'badge-' + btn.type;
+            var typeLabel = btn.type.charAt(0).toUpperCase() + btn.type.slice(1);
+
+            html += '<div class="button-card">';
+            html += '<div class="card-header" onclick="toggleCardBody(\'' + btn.id + '\')">';
+            html += '<div class="card-header-left">';
+            html += '<span class="badge ' + badgeClass + '">' + typeLabel + '</span>';
+            html += '<h3>' + escapeHtml(btn.name) + '</h3>';
+            if (btn.type !== 'dropdown' && btn.value) {
+                html += '<span style="color:#94a3b8;font-size:12px;">' + escapeHtml(btn.value) + '</span>';
+            }
+            if (btn.type === 'dropdown') {
+                html += '<span style="color:#94a3b8;font-size:12px;">' + (btn.options ? btn.options.length : 0) + ' options</span>';
+            }
+            html += '</div>';
+            html += '<div class="card-actions">';
+            html += '<button onclick="event.stopPropagation();openEditButtonModal(\'' + btn.id + '\')">Edit</button>';
+            html += '<button class="delete-btn" onclick="event.stopPropagation();deleteButton(\'' + btn.id + '\')">Delete</button>';
+            html += '</div>';
+            html += '</div>';
+
+            html += '<div class="card-body" id="card-body-' + btn.id + '">';
+            if (btn.type === 'dropdown') {
+                html += '<div class="options-section">';
+                html += '<h4>Dropdown Options</h4>';
+                if (btn.options && btn.options.length > 0) {
+                    for (var j = 0; j < btn.options.length; j++) {
+                        var opt = btn.options[j];
+                        var optBadge = opt.type === 'link' ? 'badge-link' : 'badge-tag';
+                        html += '<div class="option-item">';
+                        html += '<span class="badge ' + optBadge + '">' + opt.type + '</span>';
+                        html += '<span class="opt-name">' + escapeHtml(opt.name) + '</span>';
+                        html += '<span class="opt-value">' + escapeHtml(opt.value) + '</span>';
+                        html += '<button class="opt-delete" onclick="deleteOption(\'' + btn.id + '\',\'' + opt.id + '\')">&times;</button>';
+                        html += '</div>';
+                    }
+                } else {
+                    html += '<p style="color:#94a3b8;font-size:13px;">No options yet.</p>';
+                }
+                html += '<button class="btn-primary" style="margin-top:10px;padding:8px 14px;font-size:12px;" onclick="openAddOptionModal(\'' + btn.id + '\')">+ Add Option</button>';
+                html += '</div>';
+            } else if (btn.type === 'link') {
+                html += '<div class="field-group"><label>URL</label>';
+                html += '<input type="text" value="' + escapeHtml(btn.value || '') + '" onchange="updateButtonValue(\'' + btn.id + '\', this.value)"></div>';
+            } else {
+                html += '<div class="field-group"><label>Tag Name</label>';
+                html += '<input type="text" value="' + escapeHtml(btn.value || '') + '" onchange="updateButtonValue(\'' + btn.id + '\', this.value)"></div>';
+            }
+            html += '</div>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    function createEmptyState() {
+        var div = document.createElement('div');
+        div.className = 'empty-state';
+        div.id = 'empty-state';
+        div.innerHTML = '<div class="icon">+</div><p>No buttons configured yet. Click "Add Button" to get started.</p>';
+        return div;
+    }
+
+    function updateButtonValue(btnId, newValue) {
+        var btn = findButton(btnId);
+        if (btn) btn.value = newValue.trim();
+    }
+
+    /* =============================================================
+       PREVIEW
+       ============================================================= */
+    function renderPreview() {
+        var container = document.getElementById('preview-buttons');
+        if (buttons.length === 0) {
+            container.innerHTML = '<p style="color:#94a3b8;font-size:14px;">Add buttons in the Configure tab to see a preview.</p>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            if (btn.type === 'dropdown') {
+                html += '<div style="position:relative;display:inline-block;">';
+                html += '<button class="ghl-btn" onclick="togglePreviewDropdown(\'' + btn.id + '\')">';
+                html += '<span class="type-dot dropdown-dot"></span>';
+                html += escapeHtml(btn.name);
+                html += '<span class="arrow">&#9662;</span>';
+                html += '</button>';
+                html += '<div class="ghl-dropdown-menu" id="preview-dd-' + btn.id + '">';
+                if (btn.options) {
+                    for (var j = 0; j < btn.options.length; j++) {
+                        var opt = btn.options[j];
+                        var dotClass = opt.type === 'link' ? 'link-dot' : 'tag-dot';
+                        html += '<div class="ghl-dropdown-item">';
+                        html += '<span class="type-dot ' + dotClass + '"></span>';
+                        html += escapeHtml(opt.name);
+                        html += '</div>';
+                    }
+                }
+                html += '</div></div>';
+            } else if (btn.type === 'link') {
+                html += '<button class="ghl-btn">';
+                html += '<span class="type-dot link-dot"></span>';
+                html += escapeHtml(btn.name);
+                html += '</button>';
+            } else {
+                html += '<button class="ghl-btn">';
+                html += '<span class="type-dot tag-dot"></span>';
+                html += escapeHtml(btn.name);
+                html += '</button>';
+            }
+        }
+        html += '<button class="ghl-settings-btn">&#9881; Settings</button>';
+        container.innerHTML = html;
+    }
+
+    function togglePreviewDropdown(btnId) {
+        var menu = document.getElementById('preview-dd-' + btnId);
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+    }
+
+    // Close preview dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.ghl-btn')) {
+            var menus = document.querySelectorAll('.ghl-dropdown-menu');
+            for (var i = 0; i < menus.length; i++) {
+                menus[i].classList.remove('show');
+            }
+        }
+    });
+
+    /* =============================================================
+       LOAD EXAMPLE
+       ============================================================= */
+    function loadExample() {
+        buttons = [
+            {
+                id: generateId('btn'),
+                name: 'Policy Status',
+                type: 'dropdown',
+                options: [
+                    { id: generateId('opt'), name: 'Cancelled', type: 'tag', value: 'cancelled' },
+                    { id: generateId('opt'), name: 'Active', type: 'tag', value: 'active' },
+                    { id: generateId('opt'), name: 'View Portal', type: 'link', value: 'https://portal.example.com' }
+                ]
+            },
+            {
+                id: generateId('btn'),
+                name: 'Quote Tool',
+                type: 'link',
+                value: 'https://quotes.example.com'
+            },
+            {
+                id: generateId('btn'),
+                name: 'Mark Hot Lead',
+                type: 'tag',
+                value: 'hot-lead'
+            }
+        ];
+        renderButtonsList();
+        showNotification('Example buttons loaded.');
+    }
+
+    /* =============================================================
+       GENERATE CODE
+       ============================================================= */
+    function generateCode() {
+        if (buttons.length === 0) {
+            showNotification('Add at least one button first.');
+            return;
+        }
+
+        // Build a clean config array for embedding
+        var config = [];
+        for (var i = 0; i < buttons.length; i++) {
+            var btn = buttons[i];
+            var entry = {
+                id: btn.id,
+                name: btn.name,
+                type: btn.type
+            };
+            if (btn.type === 'dropdown') {
+                entry.options = [];
+                if (btn.options) {
+                    for (var j = 0; j < btn.options.length; j++) {
+                        var opt = btn.options[j];
+                        entry.options.push({
+                            id: opt.id,
+                            name: opt.name,
+                            type: opt.type,
+                            value: opt.value
+                        });
+                    }
+                }
+            } else {
+                entry.value = btn.value;
+            }
+            config.push(entry);
+        }
+
+        var configJSON = JSON.stringify(config, null, 4);
+
+        var code = buildInjectionCode(configJSON);
+        document.getElementById('code-output').value = code;
+        switchTab('code');
+        showNotification('Code generated! Copy and paste into GHL Custom Code.');
+    }
+
+    function buildInjectionCode(configJSON) {
+        // The entire injection script is built as a string.
+        // We use ES5-compatible syntax throughout (no arrow functions, no template literals).
+        var lines = [];
+        lines.push('<script>');
+        lines.push('/* ======================================================================');
+        lines.push('   GHL Custom Button Injection');
+        lines.push('   Generated by Button Configurator');
+        lines.push('   Paste this into GHL > Settings > Custom Code > Body');
+        lines.push('   ====================================================================== */');
+        lines.push('(function() {');
+        lines.push('    "use strict";');
+        lines.push('');
+        lines.push('    // ---- ADMIN CONFIGURATION (edit via Configurator) ----');
+        lines.push('    var AVAILABLE_BUTTONS = ' + configJSON + ';');
+        lines.push('');
+        lines.push('    // ---- CONSTANTS ----');
+        lines.push('    var STORAGE_KEY = "ghl_custom_buttons_prefs";');
+        lines.push('    var CONTAINER_ID = "ghl-custom-buttons-container";');
+        lines.push('    var MAX_RETRIES = 60;');
+        lines.push('    var RETRY_INTERVAL = 500;');
+        lines.push('    var retryCount = 0;');
+        lines.push('    var lastUrl = "";');
+        lines.push('');
+        lines.push('    console.log("[GHL Buttons] Script loaded. " + AVAILABLE_BUTTONS.length + " buttons configured.");');
+        lines.push('');
+        lines.push('    // ---- CSS ----');
+        lines.push('    function injectStyles() {');
+        lines.push('        if (document.getElementById("ghl-custom-btn-styles")) return;');
+        lines.push('        var style = document.createElement("style");');
+        lines.push('        style.id = "ghl-custom-btn-styles";');
+        lines.push('        style.textContent = [');
+        lines.push('            "#" + CONTAINER_ID + " { display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:flex-start; }",');
+        lines.push('            ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('            ".gcb-btn:hover { background:#f9fafb;border-color:#9ca3af; }",');
+        lines.push('            ".gcb-dot { width:8px;height:8px;border-radius:50%;display:inline-block; }",');
+        lines.push('            ".gcb-dot-dropdown { background:#3b82f6; }",');
+        lines.push('            ".gcb-dot-link { background:#10b981; }",');
+        lines.push('            ".gcb-dot-tag { background:#f59e0b; }",');
+        lines.push('            ".gcb-arrow { font-size:10px;margin-left:2px; }",');
+        lines.push('            ".gcb-dropdown { display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.12);min-width:180px;z-index:10001;margin-top:4px;overflow:hidden; }",');
+        lines.push('            ".gcb-dropdown.gcb-open { display:block; }",');
+        lines.push('            ".gcb-dd-item { padding:10px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s; }",');
+        lines.push('            ".gcb-dd-item:hover { background:#f1f5f9; }",');
+        lines.push('            ".gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:13px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s; }",');
+        lines.push('            ".gcb-settings-btn:hover { background:#e2e8f0; }",');
+        lines.push('            ".gcb-panel-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:10002; }",');
+        lines.push('            ".gcb-panel-overlay.gcb-open { display:block; }",');
+        lines.push('            ".gcb-panel { position:fixed;top:0;right:-360px;width:340px;height:100%;background:#fff;box-shadow:-4px 0 20px rgba(0,0,0,0.1);z-index:10003;transition:right 0.25s;overflow-y:auto;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif; }",');
+        lines.push('            ".gcb-panel.gcb-open { right:0; }",');
+        lines.push('            ".gcb-panel-header { padding:20px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between; }",');
+        lines.push('            ".gcb-panel-header h3 { font-size:16px;font-weight:600;margin:0; }",');
+        lines.push('            ".gcb-panel-close { background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;padding:4px; }",');
+        lines.push('            ".gcb-panel-body { padding:20px; }",');
+        lines.push('            ".gcb-toggle-row { display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f1f5f9; }",');
+        lines.push('            ".gcb-toggle-label { font-size:14px;font-weight:500; }",');
+        lines.push('            ".gcb-toggle-type { font-size:11px;color:#94a3b8;text-transform:uppercase; }",');
+        lines.push('            ".gcb-switch { position:relative;width:44px;height:24px;flex-shrink:0; }",');
+        lines.push('            ".gcb-switch input { opacity:0;width:0;height:0; }",');
+        lines.push('            ".gcb-slider { position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;transition:0.2s; }",');
+        lines.push('            ".gcb-slider:before { content:\\'\\';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.2s; }",');
+        lines.push('            ".gcb-switch input:checked + .gcb-slider { background:#3b82f6; }",');
+        lines.push('            ".gcb-switch input:checked + .gcb-slider:before { transform:translateX(20px); }",');
+        lines.push('            ".gcb-notif { position:fixed;bottom:24px;right:24px;padding:12px 20px;background:#1e293b;color:#fff;border-radius:8px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:10010;opacity:0;transform:translateY(10px);transition:all 0.3s;font-family:inherit; }",');
+        lines.push('            ".gcb-notif.gcb-show { opacity:1;transform:translateY(0); }",');
+        lines.push('            ".gcb-notif-error { background:#dc2626; }"');
+        lines.push('        ].join("\\n");');
+        lines.push('        document.head.appendChild(style);');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- PREFERENCES ----');
+        lines.push('    function getPrefs() {');
+        lines.push('        try {');
+        lines.push('            var raw = localStorage.getItem(STORAGE_KEY);');
+        lines.push('            if (raw) return JSON.parse(raw);');
+        lines.push('        } catch(e) { console.log("[GHL Buttons] Error reading prefs:", e); }');
+        lines.push('        return {};');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    function savePrefs(prefs) {');
+        lines.push('        try {');
+        lines.push('            localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));');
+        lines.push('        } catch(e) { console.log("[GHL Buttons] Error saving prefs:", e); }');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    function isButtonEnabled(btnId) {');
+        lines.push('        var prefs = getPrefs();');
+        lines.push('        // Default: all enabled');
+        lines.push('        if (prefs.hasOwnProperty(btnId)) return prefs[btnId];');
+        lines.push('        return true;');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- NOTIFICATION ----');
+        lines.push('    function showNotification(msg, isError) {');
+        lines.push('        var existing = document.querySelector(".gcb-notif");');
+        lines.push('        if (existing) existing.parentNode.removeChild(existing);');
+        lines.push('        var el = document.createElement("div");');
+        lines.push('        el.className = "gcb-notif" + (isError ? " gcb-notif-error" : "");');
+        lines.push('        el.textContent = msg;');
+        lines.push('        document.body.appendChild(el);');
+        lines.push('        setTimeout(function() { el.classList.add("gcb-show"); }, 10);');
+        lines.push('        setTimeout(function() {');
+        lines.push('            el.classList.remove("gcb-show");');
+        lines.push('            setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 300);');
+        lines.push('        }, 3000);');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- TAG ADDITION ----');
+        lines.push('    function addTagToContact(tagName) {');
+        lines.push('        console.log("[GHL Buttons] Adding tag: " + tagName);');
+        lines.push('        var tagInput = document.querySelector("input[placeholder*=\\"tag\\" i]") ||');
+        lines.push('                       document.querySelector(".tag-input input") ||');
+        lines.push('                       document.querySelector("input.hl-text-input");');
+        lines.push('        if (!tagInput) {');
+        lines.push('            showNotification("Tag input not found. Please ensure the tags section is visible.", true);');
+        lines.push('            console.log("[GHL Buttons] Tag input not found.");');
+        lines.push('            return;');
+        lines.push('        }');
+        lines.push('        tagInput.focus();');
+        lines.push('        var nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;');
+        lines.push('        nativeSetter.call(tagInput, tagName);');
+        lines.push('        tagInput.dispatchEvent(new Event("input", { bubbles: true }));');
+        lines.push('        setTimeout(function() {');
+        lines.push('            tagInput.dispatchEvent(new KeyboardEvent("keydown", {');
+        lines.push('                key: "Enter", keyCode: 13, bubbles: true');
+        lines.push('            }));');
+        lines.push('            setTimeout(function() {');
+        lines.push('                nativeSetter.call(tagInput, "");');
+        lines.push('                tagInput.dispatchEvent(new Event("input", { bubbles: true }));');
+        lines.push('                tagInput.blur();');
+        lines.push('            }, 100);');
+        lines.push('            showNotification("Tag added: " + tagName);');
+        lines.push('            console.log("[GHL Buttons] Tag added successfully: " + tagName);');
+        lines.push('        }, 100);');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- CLOSE ALL DROPDOWNS ----');
+        lines.push('    function closeAllDropdowns() {');
+        lines.push('        var menus = document.querySelectorAll(".gcb-dropdown");');
+        lines.push('        for (var i = 0; i < menus.length; i++) {');
+        lines.push('            menus[i].classList.remove("gcb-open");');
+        lines.push('        }');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    document.addEventListener("click", function(e) {');
+        lines.push('        if (!e.target.closest(".gcb-btn")) closeAllDropdowns();');
+        lines.push('    });');
+        lines.push('');
+        lines.push('    // ---- SETTINGS PANEL ----');
+        lines.push('    function openSettings() {');
+        lines.push('        var overlay = document.querySelector(".gcb-panel-overlay");');
+        lines.push('        var panel = document.querySelector(".gcb-panel");');
+        lines.push('        if (!overlay || !panel) return;');
+        lines.push('        overlay.classList.add("gcb-open");');
+        lines.push('        panel.classList.add("gcb-open");');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    function closeSettings() {');
+        lines.push('        var overlay = document.querySelector(".gcb-panel-overlay");');
+        lines.push('        var panel = document.querySelector(".gcb-panel");');
+        lines.push('        if (overlay) overlay.classList.remove("gcb-open");');
+        lines.push('        if (panel) panel.classList.remove("gcb-open");');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    function buildSettingsPanel() {');
+        lines.push('        // Remove existing');
+        lines.push('        var existing = document.querySelector(".gcb-panel-overlay");');
+        lines.push('        if (existing) existing.parentNode.removeChild(existing);');
+        lines.push('        var existingPanel = document.querySelector(".gcb-panel");');
+        lines.push('        if (existingPanel) existingPanel.parentNode.removeChild(existingPanel);');
+        lines.push('');
+        lines.push('        var overlay = document.createElement("div");');
+        lines.push('        overlay.className = "gcb-panel-overlay";');
+        lines.push('        overlay.addEventListener("click", closeSettings);');
+        lines.push('        document.body.appendChild(overlay);');
+        lines.push('');
+        lines.push('        var panel = document.createElement("div");');
+        lines.push('        panel.className = "gcb-panel";');
+        lines.push('');
+        lines.push('        var header = document.createElement("div");');
+        lines.push('        header.className = "gcb-panel-header";');
+        lines.push('        var h3 = document.createElement("h3");');
+        lines.push('        h3.textContent = "Button Settings";');
+        lines.push('        var closeBtn = document.createElement("button");');
+        lines.push('        closeBtn.className = "gcb-panel-close";');
+        lines.push('        closeBtn.innerHTML = "&times;";');
+        lines.push('        closeBtn.addEventListener("click", closeSettings);');
+        lines.push('        header.appendChild(h3);');
+        lines.push('        header.appendChild(closeBtn);');
+        lines.push('        panel.appendChild(header);');
+        lines.push('');
+        lines.push('        var body = document.createElement("div");');
+        lines.push('        body.className = "gcb-panel-body";');
+        lines.push('');
+        lines.push('        for (var i = 0; i < AVAILABLE_BUTTONS.length; i++) {');
+        lines.push('            (function(btn) {');
+        lines.push('                var row = document.createElement("div");');
+        lines.push('                row.className = "gcb-toggle-row";');
+        lines.push('');
+        lines.push('                var info = document.createElement("div");');
+        lines.push('                var labelDiv = document.createElement("div");');
+        lines.push('                labelDiv.className = "gcb-toggle-label";');
+        lines.push('                labelDiv.textContent = btn.name;');
+        lines.push('                var typeDiv = document.createElement("div");');
+        lines.push('                typeDiv.className = "gcb-toggle-type";');
+        lines.push('                typeDiv.textContent = btn.type;');
+        lines.push('                info.appendChild(labelDiv);');
+        lines.push('                info.appendChild(typeDiv);');
+        lines.push('');
+        lines.push('                var switchLabel = document.createElement("label");');
+        lines.push('                switchLabel.className = "gcb-switch";');
+        lines.push('                var checkbox = document.createElement("input");');
+        lines.push('                checkbox.type = "checkbox";');
+        lines.push('                checkbox.checked = isButtonEnabled(btn.id);');
+        lines.push('                checkbox.addEventListener("change", function() {');
+        lines.push('                    var prefs = getPrefs();');
+        lines.push('                    prefs[btn.id] = this.checked;');
+        lines.push('                    savePrefs(prefs);');
+        lines.push('                    injectButtons();');
+        lines.push('                });');
+        lines.push('                var slider = document.createElement("span");');
+        lines.push('                slider.className = "gcb-slider";');
+        lines.push('                switchLabel.appendChild(checkbox);');
+        lines.push('                switchLabel.appendChild(slider);');
+        lines.push('');
+        lines.push('                row.appendChild(info);');
+        lines.push('                row.appendChild(switchLabel);');
+        lines.push('                body.appendChild(row);');
+        lines.push('            })(AVAILABLE_BUTTONS[i]);');
+        lines.push('        }');
+        lines.push('');
+        lines.push('        panel.appendChild(body);');
+        lines.push('        document.body.appendChild(panel);');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- FIND TARGET ELEMENT ----');
+        lines.push('    function findTarget() {');
+        lines.push('        var target = document.getElementById("contact-details");');
+        lines.push('        if (target) return target;');
+        lines.push('        var selectors = [".hl_contact-details-left", ".hl_contact-details", "header", "main"];');
+        lines.push('        for (var i = 0; i < selectors.length; i++) {');
+        lines.push('            target = document.querySelector(selectors[i]);');
+        lines.push('            if (target) return target;');
+        lines.push('        }');
+        lines.push('        return null;');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- INJECT BUTTONS ----');
+        lines.push('    function injectButtons() {');
+        lines.push('        console.log("[GHL Buttons] Injecting buttons...");');
+        lines.push('');
+        lines.push('        // Remove old container');
+        lines.push('        var old = document.getElementById(CONTAINER_ID);');
+        lines.push('        if (old) old.parentNode.removeChild(old);');
+        lines.push('');
+        lines.push('        var target = findTarget();');
+        lines.push('        if (!target) {');
+        lines.push('            console.log("[GHL Buttons] Target element not found.");');
+        lines.push('            return false;');
+        lines.push('        }');
+        lines.push('');
+        lines.push('        var container = document.createElement("div");');
+        lines.push('        container.id = CONTAINER_ID;');
+        lines.push('');
+        lines.push('        for (var i = 0; i < AVAILABLE_BUTTONS.length; i++) {');
+        lines.push('            var btn = AVAILABLE_BUTTONS[i];');
+        lines.push('            if (!isButtonEnabled(btn.id)) continue;');
+        lines.push('');
+        lines.push('            if (btn.type === "dropdown") {');
+        lines.push('                var wrapper = document.createElement("div");');
+        lines.push('                wrapper.style.cssText = "position:relative;display:inline-block;";');
+        lines.push('');
+        lines.push('                var button = document.createElement("button");');
+        lines.push('                button.className = "gcb-btn";');
+        lines.push('                var dot = document.createElement("span");');
+        lines.push('                dot.className = "gcb-dot gcb-dot-dropdown";');
+        lines.push('                button.appendChild(dot);');
+        lines.push('                button.appendChild(document.createTextNode(btn.name));');
+        lines.push('                var arrow = document.createElement("span");');
+        lines.push('                arrow.className = "gcb-arrow";');
+        lines.push('                arrow.innerHTML = "&#9662;";');
+        lines.push('                button.appendChild(arrow);');
+        lines.push('');
+        lines.push('                var menu = document.createElement("div");');
+        lines.push('                menu.className = "gcb-dropdown";');
+        lines.push('');
+        lines.push('                (function(menuRef) {');
+        lines.push('                    button.addEventListener("click", function(e) {');
+        lines.push('                        e.stopPropagation();');
+        lines.push('                        var isOpen = menuRef.classList.contains("gcb-open");');
+        lines.push('                        closeAllDropdowns();');
+        lines.push('                        if (!isOpen) menuRef.classList.add("gcb-open");');
+        lines.push('                    });');
+        lines.push('                })(menu);');
+        lines.push('');
+        lines.push('                if (btn.options) {');
+        lines.push('                    for (var j = 0; j < btn.options.length; j++) {');
+        lines.push('                        (function(opt) {');
+        lines.push('                            var item = document.createElement("div");');
+        lines.push('                            item.className = "gcb-dd-item";');
+        lines.push('                            var optDot = document.createElement("span");');
+        lines.push('                            optDot.className = "gcb-dot " + (opt.type === "link" ? "gcb-dot-link" : "gcb-dot-tag");');
+        lines.push('                            item.appendChild(optDot);');
+        lines.push('                            item.appendChild(document.createTextNode(opt.name));');
+        lines.push('                            item.addEventListener("click", function() {');
+        lines.push('                                closeAllDropdowns();');
+        lines.push('                                if (opt.type === "link") {');
+        lines.push('                                    window.open(opt.value, "_blank");');
+        lines.push('                                } else {');
+        lines.push('                                    addTagToContact(opt.value);');
+        lines.push('                                }');
+        lines.push('                            });');
+        lines.push('                            menu.appendChild(item);');
+        lines.push('                        })(btn.options[j]);');
+        lines.push('                    }');
+        lines.push('                }');
+        lines.push('');
+        lines.push('                wrapper.appendChild(button);');
+        lines.push('                wrapper.appendChild(menu);');
+        lines.push('                container.appendChild(wrapper);');
+        lines.push('');
+        lines.push('            } else if (btn.type === "link") {');
+        lines.push('                (function(b) {');
+        lines.push('                    var button = document.createElement("button");');
+        lines.push('                    button.className = "gcb-btn";');
+        lines.push('                    var dot = document.createElement("span");');
+        lines.push('                    dot.className = "gcb-dot gcb-dot-link";');
+        lines.push('                    button.appendChild(dot);');
+        lines.push('                    button.appendChild(document.createTextNode(b.name));');
+        lines.push('                    button.addEventListener("click", function() {');
+        lines.push('                        window.open(b.value, "_blank");');
+        lines.push('                    });');
+        lines.push('                    container.appendChild(button);');
+        lines.push('                })(btn);');
+        lines.push('');
+        lines.push('            } else if (btn.type === "tag") {');
+        lines.push('                (function(b) {');
+        lines.push('                    var button = document.createElement("button");');
+        lines.push('                    button.className = "gcb-btn";');
+        lines.push('                    var dot = document.createElement("span");');
+        lines.push('                    dot.className = "gcb-dot gcb-dot-tag";');
+        lines.push('                    button.appendChild(dot);');
+        lines.push('                    button.appendChild(document.createTextNode(b.name));');
+        lines.push('                    button.addEventListener("click", function() {');
+        lines.push('                        addTagToContact(b.value);');
+        lines.push('                    });');
+        lines.push('                    container.appendChild(button);');
+        lines.push('                })(btn);');
+        lines.push('            }');
+        lines.push('        }');
+        lines.push('');
+        lines.push('        // Settings button');
+        lines.push('        var settingsBtn = document.createElement("button");');
+        lines.push('        settingsBtn.className = "gcb-settings-btn";');
+        lines.push('        settingsBtn.innerHTML = "&#9881; Settings";');
+        lines.push('        settingsBtn.addEventListener("click", function() {');
+        lines.push('            buildSettingsPanel();');
+        lines.push('            setTimeout(openSettings, 10);');
+        lines.push('        });');
+        lines.push('        container.appendChild(settingsBtn);');
+        lines.push('');
+        lines.push('        // Insert at top of target');
+        lines.push('        if (target.firstChild) {');
+        lines.push('            target.insertBefore(container, target.firstChild);');
+        lines.push('        } else {');
+        lines.push('            target.appendChild(container);');
+        lines.push('        }');
+        lines.push('');
+        lines.push('        console.log("[GHL Buttons] Buttons injected successfully.");');
+        lines.push('        return true;');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- MAIN LOOP ----');
+        lines.push('    function isContactDetailPage() {');
+        lines.push('        return window.location.href.indexOf("/contacts/detail/") !== -1;');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    function tryInject() {');
+        lines.push('        if (!isContactDetailPage()) {');
+        lines.push('            // Clean up if navigated away');
+        lines.push('            var old = document.getElementById(CONTAINER_ID);');
+        lines.push('            if (old) old.parentNode.removeChild(old);');
+        lines.push('            return;');
+        lines.push('        }');
+        lines.push('');
+        lines.push('        // Already injected?');
+        lines.push('        if (document.getElementById(CONTAINER_ID)) return;');
+        lines.push('');
+        lines.push('        injectStyles();');
+        lines.push('        var success = injectButtons();');
+        lines.push('        if (success) {');
+        lines.push('            retryCount = 0;');
+        lines.push('        } else {');
+        lines.push('            retryCount++;');
+        lines.push('            if (retryCount < MAX_RETRIES) {');
+        lines.push('                console.log("[GHL Buttons] Target not found, retry " + retryCount + "/" + MAX_RETRIES);');
+        lines.push('                setTimeout(tryInject, RETRY_INTERVAL);');
+        lines.push('            } else {');
+        lines.push('                console.log("[GHL Buttons] Max retries reached. Could not find target element.");');
+        lines.push('            }');
+        lines.push('        }');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- ROUTE CHANGE WATCHER ----');
+        lines.push('    function watchRouteChanges() {');
+        lines.push('        setInterval(function() {');
+        lines.push('            var currentUrl = window.location.href;');
+        lines.push('            if (currentUrl !== lastUrl) {');
+        lines.push('                lastUrl = currentUrl;');
+        lines.push('                console.log("[GHL Buttons] Route changed: " + currentUrl);');
+        lines.push('                retryCount = 0;');
+        lines.push('                setTimeout(tryInject, 300);');
+        lines.push('            }');
+        lines.push('        }, 500);');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    // ---- INIT ----');
+        lines.push('    if (document.readyState === "loading") {');
+        lines.push('        document.addEventListener("DOMContentLoaded", function() {');
+        lines.push('            tryInject();');
+        lines.push('            watchRouteChanges();');
+        lines.push('        });');
+        lines.push('    } else {');
+        lines.push('        tryInject();');
+        lines.push('        watchRouteChanges();');
+        lines.push('    }');
+        lines.push('');
+        lines.push('})();');
+        lines.push('</' + 'script>');
+
+        return lines.join('\n');
+    }
+
+    /* =============================================================
+       COPY CODE
+       ============================================================= */
+    function copyCode() {
+        var textarea = document.getElementById('code-output');
+        if (!textarea.value) {
+            showNotification('Generate code first.');
+            return;
+        }
+        textarea.select();
+        document.execCommand('copy');
+        showNotification('Code copied to clipboard!');
+    }
+
+    /* =============================================================
+       NOTIFICATION
+       ============================================================= */
+    function showNotification(msg) {
+        var el = document.getElementById('notif');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(function() { el.classList.remove('show'); }, 2500);
+    }
+
+    // Initial render
+    renderButtonsList();
+</script>
+
+</body>
+</html>
