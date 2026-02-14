@@ -8,29 +8,52 @@
         /* ========== RESET & BASE ========== */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #f0f2f5;
-            color: #1a1a2e;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #333;
             line-height: 1.5;
+            min-height: 100vh;
         }
 
-        /* ========== LAYOUT ========== */
-        .app-header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        /* ========== INFO BANNER ========== */
+        .info-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
-            padding: 20px 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 24px 32px;
         }
-        .app-header h1 { font-size: 22px; font-weight: 600; }
-        .app-header p { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+        .info-banner-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .info-banner-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .info-banner-col h4 {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.85;
+            margin-bottom: 8px;
+        }
+        .info-banner-col ul {
+            list-style: none;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        .info-banner-col ul li { padding: 2px 0; }
+        .info-banner-col ul li::before { content: "\2022"; margin-right: 8px; }
 
+        /* ========== TABS ========== */
         .tabs {
             display: flex;
             background: #fff;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #e0e0e0;
             padding: 0 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .tab-btn {
             padding: 14px 24px;
@@ -38,118 +61,159 @@
             background: none;
             font-size: 14px;
             font-weight: 500;
-            color: #64748b;
+            color: #777;
             cursor: pointer;
             border-bottom: 2px solid transparent;
             margin-bottom: -2px;
             transition: all 0.2s;
         }
-        .tab-btn:hover { color: #1a1a2e; }
+        .tab-btn:hover { color: #333; }
         .tab-btn.active {
-            color: #3b82f6;
-            border-bottom-color: #3b82f6;
+            color: #4285f4;
+            border-bottom-color: #4285f4;
         }
 
-        .tab-content { display: none; padding: 24px 32px; max-width: 960px; }
+        .tab-content { display: none; padding: 28px 32px; max-width: 960px; }
         .tab-content.active { display: block; }
 
-        /* ========== CONFIGURE TAB ========== */
-        .toolbar {
+        /* ========== SECTION HEADER ========== */
+        .section-header {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 24px;
         }
-        .toolbar button {
-            padding: 10px 18px;
+        .section-header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+        }
+        .section-header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* ========== BUTTONS ========== */
+        .btn-primary {
+            background: #4285f4;
+            color: #fff;
             border: none;
-            border-radius: 8px;
-            font-size: 13px;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
         }
-        .btn-primary {
-            background: #3b82f6;
-            color: #fff;
-        }
-        .btn-primary:hover { background: #2563eb; }
+        .btn-primary:hover { background: #3367d6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(66,133,244,0.3); }
         .btn-secondary {
-            background: #e2e8f0;
-            color: #475569;
-        }
-        .btn-secondary:hover { background: #cbd5e1; }
-        .btn-danger {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .btn-danger:hover { background: #fecaca; }
-        .btn-success {
-            background: #10b981;
+            background: #6c757d;
             color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-        .btn-success:hover { background: #059669; }
+        .btn-secondary:hover { background: #5a6268; }
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-success:hover { background: #218838; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(40,167,69,0.3); }
+        .btn-outline {
+            background: transparent;
+            color: #777;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover { background: #f5f5f5; border-color: #999; color: #555; }
 
+        /* ========== EMPTY STATE ========== */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #94a3b8;
+            color: #999;
         }
         .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
         .empty-state p { font-size: 15px; }
+        .empty-state .sub { font-size: 13px; color: #bbb; margin-top: 4px; }
 
-        /* ---- Button Cards ---- */
+        /* ========== BUTTON CARDS ========== */
         .button-card {
             background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            margin-bottom: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             overflow: hidden;
             transition: box-shadow 0.2s;
         }
-        .button-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .button-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
         .card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 20px;
+            padding: 14px 18px;
             cursor: pointer;
             user-select: none;
+            transition: background 0.15s;
         }
-        .card-header-left { display: flex; align-items: center; gap: 12px; }
-        .card-header-left h3 { font-size: 15px; font-weight: 600; }
+        .card-header:hover { background: #fafafa; }
+        .card-header-left { display: flex; align-items: center; gap: 10px; }
+        .card-header-left h3 { font-size: 15px; font-weight: 600; color: #333; }
+        .card-header-left .meta { font-size: 12px; color: #999; }
 
         .badge {
             display: inline-block;
-            padding: 2px 10px;
-            border-radius: 100px;
+            padding: 3px 10px;
+            border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .badge-dropdown { background: #dbeafe; color: #2563eb; }
-        .badge-link { background: #d1fae5; color: #059669; }
-        .badge-tag { background: #fef3c7; color: #d97706; }
+        .badge-dropdown { background: #e3f2fd; color: #1565c0; }
+        .badge-link { background: #e8f5e9; color: #2e7d32; }
+        .badge-tag { background: #fff3e0; color: #e65100; }
 
-        .card-actions { display: flex; gap: 8px; }
+        .card-actions { display: flex; align-items: center; gap: 6px; }
         .card-actions button {
-            padding: 6px 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            background: #fff;
-            font-size: 12px;
+            background: none;
+            border: none;
+            font-size: 16px;
             cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
             transition: all 0.15s;
+            color: #999;
         }
-        .card-actions button:hover { background: #f8fafc; }
-        .card-actions .delete-btn { color: #dc2626; border-color: #fecaca; }
-        .card-actions .delete-btn:hover { background: #fee2e2; }
+        .card-actions button:hover { color: #555; background: #f0f0f0; }
+        .card-actions .delete-btn:hover { color: #dc3545; background: #fee2e2; }
+        .card-actions .chevron {
+            font-size: 12px;
+            transition: transform 0.2s;
+            color: #999;
+        }
 
         .card-body {
             display: none;
-            padding: 0 20px 20px;
-            border-top: 1px solid #f1f5f9;
+            padding: 0 18px 18px;
+            border-top: 1px solid #f0f0f0;
         }
         .card-body.open { display: block; }
 
@@ -158,7 +222,7 @@
             display: block;
             font-size: 12px;
             font-weight: 600;
-            color: #64748b;
+            color: #777;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 6px;
@@ -166,53 +230,77 @@
         .field-group input, .field-group select {
             width: 100%;
             padding: 10px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             font-size: 14px;
             transition: border-color 0.15s;
+            color: #333;
         }
         .field-group input:focus, .field-group select:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66,133,244,0.1);
         }
 
-        /* ---- Dropdown options list ---- */
+        /* ---- Dropdown Options Grid ---- */
         .options-section { margin-top: 16px; }
         .options-section h4 {
             font-size: 13px;
             font-weight: 600;
-            color: #475569;
-            margin-bottom: 10px;
+            color: #555;
+            margin-bottom: 12px;
         }
-        .option-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+        .option-card {
+            position: relative;
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 13px;
+            padding: 14px;
+            transition: all 0.2s;
         }
-        .option-item .opt-name { font-weight: 600; flex: 1; }
-        .option-item .opt-value { color: #64748b; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .option-item .opt-delete {
+        .option-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .option-card .opt-badge { margin-bottom: 8px; }
+        .option-card .opt-name { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 4px; }
+        .option-card .opt-value {
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            color: #666;
+            background: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #e8e8e8;
+            display: inline-block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .option-card .opt-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
             background: none;
             border: none;
-            color: #dc2626;
+            font-size: 18px;
             cursor: pointer;
-            font-size: 16px;
+            color: #ccc;
             padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.15s;
         }
+        .option-card .opt-delete:hover { color: #dc3545; background: #fee2e2; }
 
         /* ========== MODAL ========== */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.5);
             z-index: 9000;
             align-items: center;
             justify-content: center;
@@ -220,33 +308,33 @@
         .modal-overlay.open { display: flex; }
         .modal {
             background: #fff;
-            border-radius: 16px;
-            width: 480px;
+            border-radius: 8px;
+            width: 500px;
             max-width: 90vw;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
         }
         .modal-header {
             padding: 20px 24px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            border-bottom: 1px solid #e0e0e0;
         }
-        .modal-header h2 { font-size: 18px; }
+        .modal-header h2 { font-size: 20px; font-weight: 600; }
         .modal-close {
             background: none;
             border: none;
-            font-size: 22px;
+            font-size: 24px;
             cursor: pointer;
-            color: #94a3b8;
+            color: #999;
             padding: 4px;
+            float: right;
+            margin-top: -4px;
         }
+        .modal-close:hover { color: #555; }
         .modal-body { padding: 24px; }
         .modal-footer {
             padding: 16px 24px;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid #e0e0e0;
             display: flex;
             justify-content: flex-end;
             gap: 10px;
@@ -255,16 +343,17 @@
         /* ========== PREVIEW TAB ========== */
         .preview-container {
             background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
             padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .preview-header {
             font-size: 13px;
-            color: #64748b;
+            color: #777;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f0f0f0;
         }
         .preview-buttons {
             display: flex;
@@ -291,14 +380,11 @@
         }
         .ghl-btn:hover { background: #f9fafb; border-color: #9ca3af; }
         .ghl-btn .type-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
+            width: 8px; height: 8px; border-radius: 50%; display: inline-block;
         }
-        .ghl-btn .type-dot.dropdown-dot { background: #3b82f6; }
-        .ghl-btn .type-dot.link-dot { background: #10b981; }
-        .ghl-btn .type-dot.tag-dot { background: #f59e0b; }
+        .ghl-btn .type-dot.dropdown-dot { background: #1565c0; }
+        .ghl-btn .type-dot.link-dot { background: #2e7d32; }
+        .ghl-btn .type-dot.tag-dot { background: #e65100; }
         .ghl-btn .arrow { font-size: 10px; margin-left: 2px; }
 
         .ghl-dropdown-menu {
@@ -307,9 +393,9 @@
             top: 100%;
             left: 0;
             background: #fff;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
             min-width: 180px;
             z-index: 1001;
             margin-top: 4px;
@@ -325,7 +411,7 @@
             gap: 8px;
             transition: background 0.1s;
         }
-        .ghl-dropdown-item:hover { background: #f1f5f9; }
+        .ghl-dropdown-item:hover { background: #f5f5f5; }
 
         .ghl-settings-btn {
             display: inline-flex;
@@ -337,42 +423,54 @@
             background: #f8fafc;
             font-size: 13px;
             cursor: pointer;
-            color: #64748b;
+            color: #777;
             transition: all 0.15s;
         }
-        .ghl-settings-btn:hover { background: #e2e8f0; }
+        .ghl-settings-btn:hover { background: #e8e8e8; }
 
         /* ========== CODE TAB ========== */
-        .code-output-area {
-            position: relative;
+        .code-section {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
+        .code-section-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .code-section-header .code-title { font-size: 16px; font-weight: 600; color: #333; }
+        .code-section-header .code-subtitle { font-size: 12px; color: #999; margin-top: 2px; }
+        .code-output-area { position: relative; }
         .code-output {
             width: 100%;
             min-height: 400px;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            max-height: 500px;
+            font-family: 'Courier New', monospace;
             font-size: 12px;
             line-height: 1.6;
             padding: 20px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background: #1e293b;
-            color: #e2e8f0;
+            border: none;
+            background: #1e1e1e;
+            color: #d4d4d4;
             resize: vertical;
         }
         .copy-btn {
-            position: absolute;
-            top: 12px;
-            right: 12px;
             padding: 8px 16px;
-            background: #3b82f6;
+            background: #4285f4;
             color: #fff;
             border: none;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        .copy-btn:hover { background: #2563eb; }
+        .copy-btn:hover { background: #3367d6; }
 
         /* ========== NOTIFICATION ========== */
         .notif {
@@ -380,9 +478,9 @@
             bottom: 24px;
             right: 24px;
             padding: 14px 22px;
-            background: #1e293b;
+            background: #333;
             color: #fff;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 14px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.15);
             z-index: 10000;
@@ -391,15 +489,37 @@
             transition: all 0.3s;
         }
         .notif.show { opacity: 1; transform: translateY(0); }
+
+        /* ========== TOOLBAR (legacy compat) ========== */
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
     </style>
 </head>
 <body>
 
-<!-- ==================== HEADER ==================== -->
-<div class="app-header">
-    <div>
-        <h1>GHL Custom Button Configurator</h1>
-        <p>Create custom buttons for GoHighLevel contact detail pages</p>
+<!-- ==================== INFO BANNER ==================== -->
+<div class="info-banner">
+    <div class="info-banner-title">&#127899; Hybrid Button System &mdash; Admin &amp; User Control</div>
+    <div class="info-banner-grid">
+        <div class="info-banner-col">
+            <h4>Admin</h4>
+            <ul>
+                <li>Configure available buttons below</li>
+                <li>Generate injection code</li>
+                <li>Paste code into GHL Custom Code</li>
+            </ul>
+        </div>
+        <div class="info-banner-col">
+            <h4>Users</h4>
+            <ul>
+                <li>See buttons on contact detail pages</li>
+                <li>Click Settings to customize their view</li>
+                <li>Toggle buttons on/off per preference</li>
+            </ul>
+        </div>
     </div>
 </div>
 
@@ -412,14 +532,21 @@
 
 <!-- ==================== CONFIGURE TAB ==================== -->
 <div id="tab-configure" class="tab-content active">
-    <div class="toolbar">
-        <button class="btn-primary" onclick="openAddButtonModal()">+ Add Button</button>
-        <button class="btn-secondary" onclick="loadExample()">Load Example</button>
+    <div class="section-header">
+        <h2>Configure Available Buttons</h2>
+        <div class="section-header-actions">
+            <button class="btn-primary" onclick="openAddButtonModal()">+ Add Button</button>
+            <button class="btn-success" onclick="generateCode()">&#9889; Generate Code</button>
+        </div>
+    </div>
+    <div style="margin-bottom: 16px;">
+        <button class="btn-outline" onclick="loadExample()">Load Example Data</button>
     </div>
     <div id="buttons-list">
         <div class="empty-state" id="empty-state">
-            <div class="icon">+</div>
-            <p>No buttons configured yet. Click "Add Button" to get started.</p>
+            <div class="icon">&#128296;</div>
+            <p>No buttons configured</p>
+            <p class="sub">Add buttons that will be available to all users</p>
         </div>
     </div>
 </div>
@@ -434,16 +561,17 @@
 
 <!-- ==================== CODE TAB ==================== -->
 <div id="tab-code" class="tab-content">
-    <p style="margin-bottom: 16px; font-size: 14px; color: #64748b;">
-        Click "Generate Code" to create the injection script. Copy the output and paste it into
-        <strong>GHL &gt; Settings &gt; Custom Code &gt; Body</strong>.
-    </p>
-    <div class="toolbar">
-        <button class="btn-success" onclick="generateCode()">Generate Code</button>
-    </div>
-    <div class="code-output-area">
-        <textarea class="code-output" id="code-output" readonly placeholder="Click 'Generate Code' above to produce the injection script..."></textarea>
-        <button class="copy-btn" onclick="copyCode()">Copy</button>
+    <div class="code-section">
+        <div class="code-section-header">
+            <div>
+                <div class="code-title">&#128203; Generated Injection Code</div>
+                <div class="code-subtitle">Paste into GoHighLevel &#8594; Settings &#8594; Custom Code &#8594; JavaScript</div>
+            </div>
+            <button class="copy-btn" onclick="copyCode()">&#128203; Copy Code</button>
+        </div>
+        <div class="code-output-area">
+            <textarea class="code-output" id="code-output" readonly placeholder="Click 'Generate Code' on the Configure tab or use the button above to produce the injection script..."></textarea>
+        </div>
     </div>
 </div>
 
@@ -451,8 +579,8 @@
 <div class="modal-overlay" id="modal-add-button">
     <div class="modal">
         <div class="modal-header">
-            <h2>Add Button</h2>
             <button class="modal-close" onclick="closeModal('modal-add-button')">&times;</button>
+            <h2>Add Button</h2>
         </div>
         <div class="modal-body">
             <div class="field-group">
@@ -483,8 +611,8 @@
 <div class="modal-overlay" id="modal-add-option">
     <div class="modal">
         <div class="modal-header">
-            <h2>Add Option</h2>
             <button class="modal-close" onclick="closeModal('modal-add-option')">&times;</button>
+            <h2>Add Option</h2>
         </div>
         <div class="modal-body">
             <div class="field-group">
@@ -514,8 +642,8 @@
 <div class="modal-overlay" id="modal-edit-button">
     <div class="modal">
         <div class="modal-header">
-            <h2>Edit Button</h2>
             <button class="modal-close" onclick="closeModal('modal-edit-button')">&times;</button>
+            <h2>Edit Button</h2>
         </div>
         <div class="modal-body">
             <div class="field-group">
@@ -761,7 +889,6 @@
        ============================================================= */
     function renderButtonsList() {
         var container = document.getElementById('buttons-list');
-        var emptyState = document.getElementById('empty-state');
 
         if (buttons.length === 0) {
             container.innerHTML = '';
@@ -781,15 +908,19 @@
             html += '<span class="badge ' + badgeClass + '">' + typeLabel + '</span>';
             html += '<h3>' + escapeHtml(btn.name) + '</h3>';
             if (btn.type !== 'dropdown' && btn.value) {
-                html += '<span style="color:#94a3b8;font-size:12px;">' + escapeHtml(btn.value) + '</span>';
+                html += '<span class="meta">' + escapeHtml(btn.value) + '</span>';
             }
             if (btn.type === 'dropdown') {
-                html += '<span style="color:#94a3b8;font-size:12px;">' + (btn.options ? btn.options.length : 0) + ' options</span>';
+                html += '<span class="meta">' + (btn.options ? btn.options.length : 0) + ' options</span>';
             }
             html += '</div>';
             html += '<div class="card-actions">';
-            html += '<button onclick="event.stopPropagation();openEditButtonModal(\'' + btn.id + '\')">Edit</button>';
-            html += '<button class="delete-btn" onclick="event.stopPropagation();deleteButton(\'' + btn.id + '\')">Delete</button>';
+            html += '<button title="Always visible" onclick="event.stopPropagation();">&#128065;</button>';
+            html += '<button onclick="event.stopPropagation();openEditButtonModal(\'' + btn.id + '\');" title="Edit">&#9998;</button>';
+            html += '<button class="delete-btn" onclick="event.stopPropagation();deleteButton(\'' + btn.id + '\');" title="Delete">&#128465;</button>';
+            if (btn.type === 'dropdown') {
+                html += '<span class="chevron">&#9660;</span>';
+            }
             html += '</div>';
             html += '</div>';
 
@@ -798,20 +929,22 @@
                 html += '<div class="options-section">';
                 html += '<h4>Dropdown Options</h4>';
                 if (btn.options && btn.options.length > 0) {
+                    html += '<div class="options-grid">';
                     for (var j = 0; j < btn.options.length; j++) {
                         var opt = btn.options[j];
                         var optBadge = opt.type === 'link' ? 'badge-link' : 'badge-tag';
-                        html += '<div class="option-item">';
-                        html += '<span class="badge ' + optBadge + '">' + opt.type + '</span>';
-                        html += '<span class="opt-name">' + escapeHtml(opt.name) + '</span>';
-                        html += '<span class="opt-value">' + escapeHtml(opt.value) + '</span>';
+                        html += '<div class="option-card">';
+                        html += '<div class="opt-badge"><span class="badge ' + optBadge + '">' + opt.type.toUpperCase() + '</span></div>';
+                        html += '<div class="opt-name">' + escapeHtml(opt.name) + '</div>';
+                        html += '<div class="opt-value">' + escapeHtml(opt.value) + '</div>';
                         html += '<button class="opt-delete" onclick="deleteOption(\'' + btn.id + '\',\'' + opt.id + '\')">&times;</button>';
                         html += '</div>';
                     }
+                    html += '</div>';
                 } else {
-                    html += '<p style="color:#94a3b8;font-size:13px;">No options yet.</p>';
+                    html += '<p style="color:#999;font-size:13px;">No options yet.</p>';
                 }
-                html += '<button class="btn-primary" style="margin-top:10px;padding:8px 14px;font-size:12px;" onclick="openAddOptionModal(\'' + btn.id + '\')">+ Add Option</button>';
+                html += '<div style="margin-top:14px;"><button class="btn-outline" onclick="openAddOptionModal(\'' + btn.id + '\')">+ Add Option</button></div>';
                 html += '</div>';
             } else if (btn.type === 'link') {
                 html += '<div class="field-group"><label>URL</label>';
@@ -830,7 +963,7 @@
         var div = document.createElement('div');
         div.className = 'empty-state';
         div.id = 'empty-state';
-        div.innerHTML = '<div class="icon">+</div><p>No buttons configured yet. Click "Add Button" to get started.</p>';
+        div.innerHTML = '<div class="icon">&#128296;</div><p>No buttons configured</p><p class="sub">Add buttons that will be available to all users</p>';
         return div;
     }
 
