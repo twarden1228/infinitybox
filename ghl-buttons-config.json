@@ -1,0 +1,39 @@
+[
+    {
+        "id": "btn_policy_status",
+        "name": "Policy Status",
+        "type": "dropdown",
+        "options": [
+            {
+                "id": "opt_cancelled",
+                "name": "Cancelled",
+                "type": "tag",
+                "value": "cancelled"
+            },
+            {
+                "id": "opt_active",
+                "name": "Active",
+                "type": "tag",
+                "value": "active"
+            },
+            {
+                "id": "opt_view_portal",
+                "name": "View Portal",
+                "type": "link",
+                "value": "https://portal.example.com"
+            }
+        ]
+    },
+    {
+        "id": "btn_quote_tool",
+        "name": "Quote Tool",
+        "type": "link",
+        "value": "https://quotes.example.com"
+    },
+    {
+        "id": "btn_hot_lead",
+        "name": "Mark Hot Lead",
+        "type": "tag",
+        "value": "hot-lead"
+    }
+]
