@@ -1,1 +1,82 @@
-[]
+[
+    {
+        "id": "btn_1771092718140_3",
+        "name": "Policy Status",
+        "type": "dropdown",
+        "options": [
+            {
+                "id": "opt_1771092728092_4",
+                "name": "Cancelled",
+                "type": "tag",
+                "value": "cancelled"
+            },
+            {
+                "id": "opt_1771092736239_5",
+                "name": "Declined",
+                "type": "tag",
+                "value": "declined"
+            },
+            {
+                "id": "opt_1771092747935_6",
+                "name": "Underiwriting",
+                "type": "tag",
+                "value": "underwriting"
+            },
+            {
+                "id": "opt_1771092757350_7",
+                "name": "Payment Failed",
+                "type": "tag",
+                "value": "isf"
+            }
+        ]
+    },
+    {
+        "id": "btn_1771092791806_8",
+        "name": "Carrier Portals",
+        "type": "dropdown",
+        "options": [
+            {
+                "id": "opt_1771092813259_9",
+                "name": "Americo",
+                "type": "link",
+                "value": "https://account.americoagent.com/"
+            },
+            {
+                "id": "opt_1771092866717_10",
+                "name": "Mutual of Omaha",
+                "type": "link",
+                "value": "https://accounts.mutualofomaha.com/samlAuthnRequest"
+            },
+            {
+                "id": "opt_1771093092939_11",
+                "name": "Ethos",
+                "type": "link",
+                "value": "https://agents.ethoslife.com/login"
+            },
+            {
+                "id": "opt_1771093152179_12",
+                "name": "Transamerica",
+                "type": "link",
+                "value": "https://secure.transamerica.com/login/sign-in/login.html"
+            },
+            {
+                "id": "opt_1771093221324_13",
+                "name": "NLG",
+                "type": "link",
+                "value": "https://nlg-prod.auth0.com/login?state=hKFo2SBkYzBHN0xuSVdla0prbWoyM09jdU43Z1ZacEdNQzJFd6FupWxvZ2luo3RpZNkgOHVzYVlFNjdsdm1WRUNoWDRlaHBidmx3R3NBNl9zcTejY2lk2SBNeUdxTjREc2doa3ZwNjV6VldybWtVUGM5cU5JeVpyUg&client=MyGqN4Dsghkvp65zVWrmkUPc9qNIyZrR&protocol=oauth2&redirect_uri=https%3A%2F%2Fwww.nationallife.com%2Fagent%2Fauth%2Flogincallback&response_type=code%20id_token&scope=openid%20profile%20email&response_mode=form_post&nonce=639066900055618905.NDNiNzYyNDctYWNkMy00NDRhLWE3MTYtZjc4NWUyYWVjYzlmYTJkMjJmYzMtM2QzOS00NDBlLTlhZDEtOGI3YmRlZmY1MDNl&connection=NLGAgentsDB&audience=https%3A%2F%2Fapi.nlg.net%2Fagent-portal&x-client-SKU=ID_NET461&x-client-ver=5.7.0.0"
+            },
+            {
+                "id": "opt_1771093255780_14",
+                "name": "AmAm",
+                "type": "link",
+                "value": "https://www.americanamicable.com/v4/AgentLogin.php"
+            },
+            {
+                "id": "opt_1771093366824_17",
+                "name": "F&G",
+                "type": "link",
+                "value": "https://saleslink.fglife.com"
+            }
+        ]
+    }
+]
