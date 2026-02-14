@@ -539,6 +539,13 @@
             <button class="btn-success" onclick="generateCode()">&#9889; Generate Code</button>
         </div>
     </div>
+    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <div class="field-group" style="margin-top:0;">
+            <label>Config URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(where you will host the JSON config file)</span></label>
+            <input type="text" id="config-url" placeholder="https://yourdomain.com/ghl-buttons-config.json" style="font-family:'Courier New',monospace;font-size:13px;">
+        </div>
+        <p style="font-size:12px;color:#999;margin-top:8px;">The generated script will fetch button configuration from this URL at runtime. Host the JSON output at this exact URL. You only need to paste the script into GHL once &mdash; just update the JSON file when buttons change.</p>
+    </div>
     <div style="margin-bottom: 16px;">
         <button class="btn-outline" onclick="loadExample()">Load Example Data</button>
     </div>
@@ -561,16 +568,31 @@
 
 <!-- ==================== CODE TAB ==================== -->
 <div id="tab-code" class="tab-content">
+    <!-- Section 1: Static Script (paste into GHL once) -->
+    <div class="code-section" style="margin-bottom:24px;">
+        <div class="code-section-header">
+            <div>
+                <div class="code-title">&#128203; Script Code (paste into GHL once)</div>
+                <div class="code-subtitle">This script is static &mdash; paste into GoHighLevel &#8594; Settings &#8594; Custom Code &#8594; Body. You never need to update it when buttons change.</div>
+            </div>
+            <button class="copy-btn" onclick="copyCode('code-output-script')">&#128203; Copy Script</button>
+        </div>
+        <div class="code-output-area">
+            <textarea class="code-output" id="code-output-script" readonly placeholder="Click 'Generate Code' on the Configure tab..."></textarea>
+        </div>
+    </div>
+
+    <!-- Section 2: JSON Config (host at your URL) -->
     <div class="code-section">
         <div class="code-section-header">
             <div>
-                <div class="code-title">&#128203; Generated Injection Code</div>
-                <div class="code-subtitle">Paste into GoHighLevel &#8594; Settings &#8594; Custom Code &#8594; JavaScript</div>
+                <div class="code-title">&#128196; Button Configuration JSON (host at your URL)</div>
+                <div class="code-subtitle">Host this JSON file at the Config URL you specified. Update it anytime to change buttons &mdash; no need to touch GHL code.</div>
             </div>
-            <button class="copy-btn" onclick="copyCode()">&#128203; Copy Code</button>
+            <button class="copy-btn" onclick="copyCode('code-output-json')">&#128203; Copy JSON</button>
         </div>
         <div class="code-output-area">
-            <textarea class="code-output" id="code-output" readonly placeholder="Click 'Generate Code' on the Configure tab or use the button above to produce the injection script..."></textarea>
+            <textarea class="code-output" id="code-output-json" readonly style="min-height:200px;" placeholder="JSON configuration will appear here after generating..."></textarea>
         </div>
     </div>
 </div>
@@ -1078,7 +1100,13 @@
             return;
         }
 
-        // Build a clean config array for embedding
+        var configUrl = document.getElementById('config-url').value.trim();
+        if (!configUrl) {
+            showNotification('Please enter a Config URL where you will host the JSON file.');
+            return;
+        }
+
+        // Build a clean config array for the JSON output
         var config = [];
         for (var i = 0; i < buttons.length; i++) {
             var btn = buttons[i];
@@ -1108,27 +1136,35 @@
 
         var configJSON = JSON.stringify(config, null, 4);
 
-        var code = buildInjectionCode(configJSON);
-        document.getElementById('code-output').value = code;
+        // Generate the static script (same every time for the same URL)
+        var code = buildInjectionCode(configUrl);
+        document.getElementById('code-output-script').value = code;
+        document.getElementById('code-output-json').value = configJSON;
         switchTab('code');
-        showNotification('Code generated! Copy and paste into GHL Custom Code.');
+        showNotification('Code generated! Copy the script AND the JSON config.');
     }
 
-    function buildInjectionCode(configJSON) {
+    function buildInjectionCode(configUrl) {
         // The entire injection script is built as a string.
         // We use ES5-compatible syntax throughout (no arrow functions, no template literals).
+        // The only dynamic value is the CONFIG_URL -- everything else is static.
+        var escapedUrl = configUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         var lines = [];
         lines.push('<script>');
         lines.push('/* ======================================================================');
-        lines.push('   GHL Custom Button Injection');
+        lines.push('   GHL Custom Button Injection (Dynamic Config)');
         lines.push('   Generated by Button Configurator');
         lines.push('   Paste this into GHL > Settings > Custom Code > Body');
+        lines.push('   This script is STATIC -- it fetches button config from an external URL.');
+        lines.push('   To change buttons, update the JSON file -- no need to modify this code.');
         lines.push('   ====================================================================== */');
         lines.push('(function() {');
         lines.push('    "use strict";');
         lines.push('');
-        lines.push('    // ---- ADMIN CONFIGURATION (edit via Configurator) ----');
-        lines.push('    var AVAILABLE_BUTTONS = ' + configJSON + ';');
+        lines.push('    // ---- CONFIG SOURCE ----');
+        lines.push('    var CONFIG_URL = "' + escapedUrl + '";');
+        lines.push('    var CONFIG_CACHE_KEY = "ghl_custom_buttons_config";');
+        lines.push('    var AVAILABLE_BUTTONS = [];');
         lines.push('');
         lines.push('    // ---- CONSTANTS ----');
         lines.push('    var STORAGE_KEY = "ghl_custom_buttons_prefs";');
@@ -1138,7 +1174,71 @@
         lines.push('    var retryCount = 0;');
         lines.push('    var lastUrl = "";');
         lines.push('');
-        lines.push('    console.log("[GHL Buttons] Script loaded. " + AVAILABLE_BUTTONS.length + " buttons configured.");');
+        lines.push('    console.log("[GHL Buttons] Script loaded. Config URL: " + CONFIG_URL);');
+        lines.push('');
+        lines.push('    // ---- FETCH CONFIG (XMLHttpRequest for ES5 compat) ----');
+        lines.push('    function fetchConfig(callback) {');
+        lines.push('        var cacheBuster = "_cb=" + new Date().getTime();');
+        lines.push('        var separator = CONFIG_URL.indexOf("?") !== -1 ? "&" : "?";');
+        lines.push('        var url = CONFIG_URL + separator + cacheBuster;');
+        lines.push('');
+        lines.push('        console.log("[GHL Buttons] Fetching config from: " + url);');
+        lines.push('        var xhr = new XMLHttpRequest();');
+        lines.push('        xhr.open("GET", url, true);');
+        lines.push('        xhr.timeout = 10000;');
+        lines.push('        xhr.onreadystatechange = function() {');
+        lines.push('            if (xhr.readyState !== 4) return;');
+        lines.push('            if (xhr.status >= 200 && xhr.status < 300) {');
+        lines.push('                try {');
+        lines.push('                    var data = JSON.parse(xhr.responseText);');
+        lines.push('                    if (data && data.length) {');
+        lines.push('                        AVAILABLE_BUTTONS = data;');
+        lines.push('                        console.log("[GHL Buttons] Config loaded: " + data.length + " buttons.");');
+        lines.push('                        try {');
+        lines.push('                            localStorage.setItem(CONFIG_CACHE_KEY, xhr.responseText);');
+        lines.push('                        } catch(e) {');
+        lines.push('                            console.log("[GHL Buttons] Could not cache config:", e);');
+        lines.push('                        }');
+        lines.push('                        callback();');
+        lines.push('                        return;');
+        lines.push('                    }');
+        lines.push('                } catch(e) {');
+        lines.push('                    console.log("[GHL Buttons] Error parsing config JSON:", e);');
+        lines.push('                }');
+        lines.push('            }');
+        lines.push('            // Fetch failed or parse failed -- fall back to cache');
+        lines.push('            loadCachedConfig();');
+        lines.push('            callback();');
+        lines.push('        };');
+        lines.push('        xhr.ontimeout = function() {');
+        lines.push('            console.log("[GHL Buttons] Config fetch timed out. Using cached config.");');
+        lines.push('            loadCachedConfig();');
+        lines.push('            callback();');
+        lines.push('        };');
+        lines.push('        xhr.onerror = function() {');
+        lines.push('            console.log("[GHL Buttons] Config fetch error. Using cached config.");');
+        lines.push('            loadCachedConfig();');
+        lines.push('            callback();');
+        lines.push('        };');
+        lines.push('        xhr.send();');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    function loadCachedConfig() {');
+        lines.push('        try {');
+        lines.push('            var raw = localStorage.getItem(CONFIG_CACHE_KEY);');
+        lines.push('            if (raw) {');
+        lines.push('                var data = JSON.parse(raw);');
+        lines.push('                if (data && data.length) {');
+        lines.push('                    AVAILABLE_BUTTONS = data;');
+        lines.push('                    console.log("[GHL Buttons] Loaded cached config: " + data.length + " buttons.");');
+        lines.push('                    return;');
+        lines.push('                }');
+        lines.push('            }');
+        lines.push('        } catch(e) {');
+        lines.push('            console.log("[GHL Buttons] Error reading cached config:", e);');
+        lines.push('        }');
+        lines.push('        console.log("[GHL Buttons] No cached config available. No buttons will be shown.");');
+        lines.push('    }');
         lines.push('');
         lines.push('    // ---- CSS ----');
         lines.push('    function injectStyles() {');
@@ -1531,15 +1631,23 @@
         lines.push('    }');
         lines.push('');
         lines.push('    // ---- INIT ----');
-        lines.push('    if (document.readyState === "loading") {');
-        lines.push('        document.addEventListener("DOMContentLoaded", function() {');
-        lines.push('            tryInject();');
-        lines.push('            watchRouteChanges();');
-        lines.push('        });');
-        lines.push('    } else {');
+        lines.push('    function initAfterConfig() {');
+        lines.push('        console.log("[GHL Buttons] Initializing with " + AVAILABLE_BUTTONS.length + " buttons.");');
+        lines.push('        if (AVAILABLE_BUTTONS.length === 0) {');
+        lines.push('            console.log("[GHL Buttons] No buttons configured. Nothing to inject.");');
+        lines.push('            return;');
+        lines.push('        }');
         lines.push('        tryInject();');
         lines.push('        watchRouteChanges();');
         lines.push('    }');
+        lines.push('');
+        lines.push('    fetchConfig(function() {');
+        lines.push('        if (document.readyState === "loading") {');
+        lines.push('            document.addEventListener("DOMContentLoaded", initAfterConfig);');
+        lines.push('        } else {');
+        lines.push('            initAfterConfig();');
+        lines.push('        }');
+        lines.push('    });');
         lines.push('');
         lines.push('})();');
         lines.push('</' + 'script>');
@@ -1550,15 +1658,15 @@
     /* =============================================================
        COPY CODE
        ============================================================= */
-    function copyCode() {
-        var textarea = document.getElementById('code-output');
-        if (!textarea.value) {
+    function copyCode(textareaId) {
+        var textarea = document.getElementById(textareaId);
+        if (!textarea || !textarea.value) {
             showNotification('Generate code first.');
             return;
         }
         textarea.select();
         document.execCommand('copy');
-        showNotification('Code copied to clipboard!');
+        showNotification('Copied to clipboard!');
     }
 
     /* =============================================================
