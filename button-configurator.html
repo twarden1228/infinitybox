@@ -2067,7 +2067,7 @@
         lines.push('    // Intercept XHR open -- track which requests go to GHL backend');
         lines.push('    var _origOpen = XMLHttpRequest.prototype.open;');
         lines.push('    XMLHttpRequest.prototype.open = function(method, url) {');
-        lines.push('        this._isGhlBackend = typeof url === "string" && url.indexOf("backend.leadconnectorhq.com") !== -1;');
+        lines.push('        this._isGhlBackend = typeof url === "string" && url.indexOf("leadconnectorhq.com") !== -1;');
         lines.push('        return _origOpen.apply(this, arguments);');
         lines.push('    };');
         lines.push('');
@@ -2089,7 +2089,7 @@
         lines.push('        window.fetch = function(input, init) {');
         lines.push('            try {');
         lines.push('                var url = typeof input === "string" ? input : (input && input.url ? input.url : "");');
-        lines.push('                if (url.indexOf("backend.leadconnectorhq.com") !== -1 && init && init.headers) {');
+        lines.push('                if (url.indexOf("leadconnectorhq.com") !== -1 && init && init.headers) {');
         lines.push('                    var h = init.headers;');
         lines.push('                    if (typeof Headers !== "undefined" && h instanceof Headers) {');
         lines.push('                        h.forEach(function(v, k) { _ghlHeaders[k] = v; });');
