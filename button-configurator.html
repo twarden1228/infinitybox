@@ -648,10 +648,15 @@
         </div>
         <p style="font-size:12px;color:#999;margin-top:8px;">The generated script will fetch button configuration from this URL at runtime. Host the JSON output at this exact URL. You only need to paste the script into GHL once &mdash; just update the JSON file when buttons change.</p>
         <div class="field-group" style="margin-top:14px;">
-            <label>Webhook URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(GHL Inbound Webhook for adding tags)</span></label>
+            <label>Tag Webhook URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(GHL Inbound Webhook for adding tags)</span></label>
             <input type="text" id="webhook-url" placeholder="https://services.leadconnectorhq.com/hooks/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:'Courier New',monospace;font-size:13px;">
         </div>
-        <p style="font-size:12px;color:#999;margin-top:8px;">Create a GHL Workflow with an <strong>Inbound Webhook</strong> trigger, then paste the webhook URL here. The workflow should have an "Add Contact Tag" action. Tag buttons will POST {contactId, tagName} to this URL.</p>
+        <p style="font-size:12px;color:#999;margin-top:8px;">Workflow: <strong>Inbound Webhook</strong> trigger &rarr; <strong>Add Contact Tag</strong> action. POSTs <code>{contactId, tagName}</code>.</p>
+        <div class="field-group" style="margin-top:14px;">
+            <label>Field Webhook URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(GHL Inbound Webhook for updating custom fields)</span></label>
+            <input type="text" id="field-webhook-url" placeholder="https://services.leadconnectorhq.com/hooks/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:'Courier New',monospace;font-size:13px;">
+        </div>
+        <p style="font-size:12px;color:#999;margin-top:8px;">Workflow: <strong>Inbound Webhook</strong> trigger &rarr; <strong>Update Contact</strong> action. POSTs <code>{contactId, fieldName, value}</code>. Used by forms and toggle buttons.</p>
     </div>
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <div class="field-group" style="margin-top:0;">
@@ -1882,12 +1887,14 @@
     function buildConfigArray() {
         var config = [];
         var webhookUrl = document.getElementById('webhook-url').value.trim();
+        var fieldWebhookUrl = document.getElementById('field-webhook-url').value.trim();
         var metaObj = {
             __meta: true,
             css: buildDefaultCSS(),
             icons: getDefaultIcons()
         };
         if (webhookUrl) metaObj.webhookUrl = webhookUrl;
+        if (fieldWebhookUrl) metaObj.fieldWebhookUrl = fieldWebhookUrl;
         config.push(metaObj);
         for (var i = 0; i < buttons.length; i++) {
             var btn = buttons[i];
@@ -1960,6 +1967,9 @@
                             var meta = data[0];
                             if (meta.webhookUrl) {
                                 document.getElementById('webhook-url').value = meta.webhookUrl;
+                            }
+                            if (meta.fieldWebhookUrl) {
+                                document.getElementById('field-webhook-url').value = meta.fieldWebhookUrl;
                             }
                             btnData = data.slice(1);
                         }
@@ -2059,6 +2069,7 @@
         lines.push('    // ---- CONFIG SOURCE ----');
         lines.push('    var CONFIG_URL = "' + escapedUrl + '";');
         lines.push('    var WEBHOOK_URL = null;');
+        lines.push('    var FIELD_WEBHOOK_URL = null;');
         lines.push('');
         lines.push('    // Agency-wide mode: if CONFIG_URL ends with "/" auto-append locationId.json');
         lines.push('    function getLocationId() {');
@@ -2086,7 +2097,7 @@
         lines.push('');
         lines.push('    console.log("[GHL Buttons] Script loaded. Config URL: " + CONFIG_URL);');
         lines.push('');
-        lines.push('    console.log("[GHL Buttons] v6 - Webhook mode.");');
+        lines.push('    console.log("[GHL Buttons] v7 - Dual webhook mode (tags + fields).");');
         lines.push('');
         lines.push('    // ---- FETCH CONFIG (XMLHttpRequest for ES5 compat) ----');
         lines.push('    function fetchConfig(callback) {');
@@ -2108,7 +2119,8 @@
         lines.push('                            var meta = data[0];');
         lines.push('                            if (meta.icons) CUSTOM_ICONS = meta.icons;');
         lines.push('                            if (meta.css) CUSTOM_CSS = meta.css;');
-        lines.push('                            if (meta.webhookUrl) { WEBHOOK_URL = meta.webhookUrl; console.log("[GHL Buttons] Webhook URL loaded."); }');
+        lines.push('                            if (meta.webhookUrl) { WEBHOOK_URL = meta.webhookUrl; console.log("[GHL Buttons] Tag webhook URL loaded."); }');
+        lines.push('                            if (meta.fieldWebhookUrl) { FIELD_WEBHOOK_URL = meta.fieldWebhookUrl; console.log("[GHL Buttons] Field webhook URL loaded."); }');
         lines.push('                            AVAILABLE_BUTTONS = data.slice(1);');
         lines.push('                        } else {');
         lines.push('                            AVAILABLE_BUTTONS = data;');
@@ -2154,6 +2166,7 @@
         lines.push('                        if (meta.icons) CUSTOM_ICONS = meta.icons;');
         lines.push('                        if (meta.css) CUSTOM_CSS = meta.css;');
         lines.push('                        if (meta.webhookUrl) WEBHOOK_URL = meta.webhookUrl;');
+        lines.push('                        if (meta.fieldWebhookUrl) FIELD_WEBHOOK_URL = meta.fieldWebhookUrl;');
         lines.push('                        AVAILABLE_BUTTONS = data.slice(1);');
         lines.push('                    } else {');
         lines.push('                        AVAILABLE_BUTTONS = data;');
@@ -2319,8 +2332,41 @@
         lines.push('        console.log("[GHL Buttons] Webhook POST sent: contactId=" + contactId + ", tag=" + tagName);');
         lines.push('    }');
         lines.push('');
-        // ---- CUSTOM FIELD DOM MANIPULATION ----
-        lines.push('    // ---- CUSTOM FIELD VALUE ----');
+        lines.push('    // ---- CUSTOM FIELD UPDATE (via GHL Webhook) ----');
+        lines.push('    function updateFieldViaWebhook(fieldName, value, onComplete) {');
+        lines.push('        console.log("[GHL Buttons] Updating field via webhook: " + fieldName + " = " + value);');
+        lines.push('        var contactId = getContactId();');
+        lines.push('        if (!contactId) {');
+        lines.push('            showNotification("Could not determine contact ID from URL.", true);');
+        lines.push('            if (onComplete) onComplete();');
+        lines.push('            return;');
+        lines.push('        }');
+        lines.push('        if (!FIELD_WEBHOOK_URL) {');
+        lines.push('            console.log("[GHL Buttons] No field webhook URL. Falling back to DOM manipulation.");');
+        lines.push('            setCustomFieldValue(fieldName, value);');
+        lines.push('            if (onComplete) onComplete();');
+        lines.push('            return;');
+        lines.push('        }');
+        lines.push('        var xhr = new XMLHttpRequest();');
+        lines.push('        xhr.open("POST", FIELD_WEBHOOK_URL, true);');
+        lines.push('        xhr.setRequestHeader("Content-Type", "application/json");');
+        lines.push('        xhr.onreadystatechange = function() {');
+        lines.push('            if (xhr.readyState !== 4) return;');
+        lines.push('            if (xhr.status >= 200 && xhr.status < 300) {');
+        lines.push('                showNotification("Field updated: " + fieldName);');
+        lines.push('                console.log("[GHL Buttons] Field webhook success: " + fieldName + " (status " + xhr.status + ")");');
+        lines.push('            } else {');
+        lines.push('                console.log("[GHL Buttons] Field webhook FAIL status=" + xhr.status + " resp=" + xhr.responseText);');
+        lines.push('                showNotification("Failed to update field. Status: " + xhr.status, true);');
+        lines.push('            }');
+        lines.push('            if (onComplete) onComplete();');
+        lines.push('        };');
+        lines.push('        xhr.send(JSON.stringify({ type: "update_field", contactId: contactId, fieldName: fieldName, value: value }));');
+        lines.push('        console.log("[GHL Buttons] Field webhook POST sent: contactId=" + contactId + ", field=" + fieldName + ", value=" + value);');
+        lines.push('    }');
+        lines.push('');
+        // ---- CUSTOM FIELD DOM MANIPULATION (fallback) ----
+        lines.push('    // ---- CUSTOM FIELD VALUE (DOM fallback) ----');
         lines.push('    function setCustomFieldValue(fieldName, value) {');
         lines.push('        console.log("[GHL Buttons] Setting custom field: " + fieldName + " = " + value);');
         lines.push('        var labels = document.querySelectorAll("label");');
@@ -2386,8 +2432,15 @@
         lines.push('                cfQueue.push({ fieldName: field.destination.fieldName, value: value });');
         lines.push('            }');
         lines.push('        }');
-        lines.push('        for (var c = 0; c < cfQueue.length; c++) {');
-        lines.push('            setCustomFieldValue(cfQueue[c].fieldName, cfQueue[c].value);');
+        lines.push('        // Process custom fields via webhook sequentially, then tags');
+        lines.push('        function processNextField(index) {');
+        lines.push('            if (index >= cfQueue.length) {');
+        lines.push('                processNextTag(0);');
+        lines.push('                return;');
+        lines.push('            }');
+        lines.push('            updateFieldViaWebhook(cfQueue[index].fieldName, cfQueue[index].value, function() {');
+        lines.push('                processNextField(index + 1);');
+        lines.push('            });');
         lines.push('        }');
         lines.push('        function processNextTag(index) {');
         lines.push('            if (index >= tagQueue.length) {');
@@ -2396,11 +2449,7 @@
         lines.push('            }');
         lines.push('            addTagToContact(tagQueue[index], function() { processNextTag(index + 1); });');
         lines.push('        }');
-        lines.push('        if (tagQueue.length > 0) {');
-        lines.push('            processNextTag(0);');
-        lines.push('        } else {');
-        lines.push('            if (callback) callback();');
-        lines.push('        }');
+        lines.push('        processNextField(0);');
         lines.push('    }');
         lines.push('');
 
@@ -2826,12 +2875,10 @@
         lines.push('                        isOn = !isOn;');
         lines.push('                        if (isOn) {');
         lines.push('                            track.classList.add("gcb-on");');
-        lines.push('                            setCustomFieldValue(b.fieldName, b.onValue);');
-        lines.push('                            showNotification(b.name + ": " + b.onValue);');
+        lines.push('                            updateFieldViaWebhook(b.fieldName, b.onValue);');
         lines.push('                        } else {');
         lines.push('                            track.classList.remove("gcb-on");');
-        lines.push('                            setCustomFieldValue(b.fieldName, b.offValue);');
-        lines.push('                            showNotification(b.name + ": " + b.offValue);');
+        lines.push('                            updateFieldViaWebhook(b.fieldName, b.offValue);');
         lines.push('                        }');
         lines.push('                        try {');
         lines.push('                            localStorage.setItem("gcb_toggle_" + b.id, isOn ? "on" : "off");');
