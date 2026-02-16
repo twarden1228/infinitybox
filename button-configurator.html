@@ -2328,8 +2328,8 @@
         lines.push('            }');
         lines.push('            if (onComplete) onComplete();');
         lines.push('        };');
-        lines.push('        xhr.send(JSON.stringify({ type: "add_tag", contactId: contactId, tagName: tagName }));');
-        lines.push('        console.log("[GHL Buttons] Webhook POST sent: contactId=" + contactId + ", tag=" + tagName);');
+        lines.push('        xhr.send(JSON.stringify({ type: "add_tag", contactId: contactId, contact_id: contactId, locationId: getLocationId(), location_id: getLocationId(), tagName: tagName, tag_name: tagName }));');
+        lines.push('        console.log("[GHL Buttons] Webhook POST sent: contactId=" + contactId + ", locationId=" + getLocationId() + ", tag=" + tagName);');
         lines.push('    }');
         lines.push('');
         lines.push('    // ---- CUSTOM FIELD UPDATE (via GHL Webhook) ----');
@@ -2361,8 +2361,8 @@
         lines.push('            }');
         lines.push('            if (onComplete) onComplete();');
         lines.push('        };');
-        lines.push('        xhr.send(JSON.stringify({ type: "update_field", contactId: contactId, fieldName: fieldName, value: value }));');
-        lines.push('        console.log("[GHL Buttons] Field webhook POST sent: contactId=" + contactId + ", field=" + fieldName + ", value=" + value);');
+        lines.push('        xhr.send(JSON.stringify({ type: "update_field", contactId: contactId, contact_id: contactId, locationId: getLocationId(), location_id: getLocationId(), fieldName: fieldName, field_name: fieldName, value: value }));');
+        lines.push('        console.log("[GHL Buttons] Field webhook POST sent: contactId=" + contactId + ", locationId=" + getLocationId() + ", field=" + fieldName + ", value=" + value);');
         lines.push('    }');
         lines.push('');
         // ---- CUSTOM FIELD DOM MANIPULATION (fallback) ----
