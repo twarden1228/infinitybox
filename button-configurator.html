@@ -2361,7 +2361,7 @@
         lines.push('            }');
         lines.push('            if (onComplete) onComplete();');
         lines.push('        };');
-        lines.push('        var payload = { type: "update_field", contactId: contactId, contact_id: contactId, locationId: getLocationId(), location_id: getLocationId(), fieldName: fieldName, field_name: fieldName, value: value };');
+        lines.push('        var payload = { type: "update_field", contactId: contactId, contact_id: contactId, locationId: getLocationId(), location_id: getLocationId() };');
         lines.push('        payload[fieldName] = value;');
         lines.push('        xhr.send(JSON.stringify(payload));');
         lines.push('        console.log("[GHL Buttons] Field webhook POST sent:", JSON.stringify(payload));');
