@@ -655,13 +655,6 @@
         </div>
         <p style="font-size:12px;color:#999;margin-top:8px;">Create a token at GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens (classic) with <code>public_repo</code> scope. This lets the configurator save the JSON config directly to the repo so you never have to manually update it.</p>
     </div>
-    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <div class="field-group" style="margin-top:0;">
-            <label>GHL Agency API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(Private Integration Token &mdash; stored locally in your browser only)</span></label>
-            <input type="password" id="ghl-api-key" placeholder="pit-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:'Courier New',monospace;font-size:13px;">
-        </div>
-        <p style="font-size:12px;color:#999;margin-top:8px;">Create at Agency Settings &rarr; Integrations &rarr; Private Integrations. Select <code>contacts.write</code> and <code>contacts.readonly</code> scopes. This token is embedded in the generated script to add tags via the GHL API.</p>
-    </div>
     <div style="margin-bottom: 16px;">
         <button class="btn-outline" onclick="loadFromGitHub()">&#128229; Load from GitHub</button>
         <button class="btn-outline" onclick="loadExample()">Load Example Data</button>
@@ -2023,29 +2016,22 @@
             return;
         }
 
-        var ghlApiKey = document.getElementById('ghl-api-key').value.trim();
-        if (!ghlApiKey) {
-            showNotification('Please enter a GHL Agency API Key (Private Integration Token) for tag actions to work.');
-            return;
-        }
-
         var config = buildConfigArray();
         var configJSON = JSON.stringify(config, null, 4);
 
         // Generate the static script (same every time for the same URL)
-        var code = buildInjectionCode(configUrl, ghlApiKey);
+        var code = buildInjectionCode(configUrl);
         document.getElementById('code-output-script').value = code;
         document.getElementById('code-output-json').value = configJSON;
         switchTab('code');
         showNotification('Code generated! Copy the script AND the JSON config.');
     }
 
-    function buildInjectionCode(configUrl, ghlApiKey) {
+    function buildInjectionCode(configUrl) {
         // The entire injection script is built as a string.
         // We use ES5-compatible syntax throughout (no arrow functions, no template literals).
-        // Dynamic values: CONFIG_URL and GHL_API_KEY.
+        // Dynamic value: CONFIG_URL.
         var escapedUrl = configUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        var escapedApiKey = ghlApiKey.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         var lines = [];
         lines.push('<script>');
         lines.push('/* ======================================================================');
@@ -2060,8 +2046,6 @@
         lines.push('');
         lines.push('    // ---- CONFIG SOURCE ----');
         lines.push('    var CONFIG_URL = "' + escapedUrl + '";');
-        lines.push('    var GHL_API_KEY = "' + escapedApiKey + '";');
-        lines.push('    var GHL_API_BASE = "https://services.leadconnectorhq.com";');
         lines.push('    var CONFIG_CACHE_KEY = "ghl_custom_buttons_config";');
         lines.push('    var AVAILABLE_BUTTONS = [];');
         lines.push('    var CUSTOM_ICONS = null;');
@@ -2076,6 +2060,17 @@
         lines.push('    var lastUrl = "";');
         lines.push('');
         lines.push('    console.log("[GHL Buttons] Script loaded. Config URL: " + CONFIG_URL);');
+        lines.push('');
+        lines.push('    // ---- CAPTURE GHL SESSION TOKEN ----');
+        lines.push('    var _ghlTokenId = null;');
+        lines.push('    var _origSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;');
+        lines.push('    XMLHttpRequest.prototype.setRequestHeader = function(name, value) {');
+        lines.push('        if (name === "Token-Id" && value) {');
+        lines.push('            _ghlTokenId = value;');
+        lines.push('        }');
+        lines.push('        return _origSetRequestHeader.apply(this, arguments);');
+        lines.push('    };');
+        lines.push('    console.log("[GHL Buttons] Token-Id interceptor installed.");');
         lines.push('');
         lines.push('    // ---- FETCH CONFIG (XMLHttpRequest for ES5 compat) ----');
         lines.push('    function fetchConfig(callback) {');
@@ -2273,28 +2268,30 @@
         lines.push('        return match ? match[1] : null;');
         lines.push('    }');
         lines.push('');
-        lines.push('    // ---- TAG ADDITION (via GHL Public API v2) ----');
-        lines.push('    function addTagToContact(tagName) {');
-        lines.push('        console.log("[GHL Buttons] Adding tag via GHL API: " + tagName);');
+        lines.push('    // ---- TAG ADDITION (via GHL internal API with session token) ----');
+        lines.push('    function addTagToContact(tagName, onComplete) {');
+        lines.push('        console.log("[GHL Buttons] Adding tag via internal API: " + tagName);');
         lines.push('        var contactId = getContactId();');
         lines.push('        if (!contactId) {');
         lines.push('            showNotification("Could not determine contact ID from URL.", true);');
+        lines.push('            if (onComplete) onComplete();');
         lines.push('            return;');
         lines.push('        }');
-        lines.push('        if (!GHL_API_KEY) {');
-        lines.push('            showNotification("GHL API key not configured.", true);');
+        lines.push('        if (!_ghlTokenId) {');
+        lines.push('            showNotification("Session token not captured yet. Navigate to another page and back, then try again.", true);');
+        lines.push('            console.log("[GHL Buttons] No Token-Id captured. GHL may not have made any API calls yet.");');
+        lines.push('            if (onComplete) onComplete();');
         lines.push('            return;');
         lines.push('        }');
         lines.push('        var xhr = new XMLHttpRequest();');
-        lines.push('        xhr.open("POST", GHL_API_BASE + "/contacts/" + contactId + "/tags", true);');
+        lines.push('        xhr.open("POST", "https://backend.leadconnectorhq.com/contacts/" + contactId + "/tags", true);');
         lines.push('        xhr.setRequestHeader("Content-Type", "application/json");');
-        lines.push('        xhr.setRequestHeader("Authorization", "Bearer " + GHL_API_KEY);');
-        lines.push('        xhr.setRequestHeader("Version", "2021-07-28");');
+        lines.push('        xhr.setRequestHeader("Token-Id", _ghlTokenId);');
         lines.push('        xhr.onreadystatechange = function() {');
         lines.push('            if (xhr.readyState !== 4) return;');
         lines.push('            if (xhr.status >= 200 && xhr.status < 300) {');
         lines.push('                showNotification("Tag added: " + tagName);');
-        lines.push('                console.log("[GHL Buttons] Tag added successfully: " + tagName);');
+        lines.push('                console.log("[GHL Buttons] Tag added successfully: " + tagName + " (status " + xhr.status + ")");');
         lines.push('            } else {');
         lines.push('                var errMsg = "Failed to add tag. Status: " + xhr.status;');
         lines.push('                try {');
@@ -2304,6 +2301,7 @@
         lines.push('                showNotification(errMsg, true);');
         lines.push('                console.log("[GHL Buttons] Tag add failed:", xhr.status, xhr.responseText);');
         lines.push('            }');
+        lines.push('            if (onComplete) onComplete();');
         lines.push('        };');
         lines.push('        xhr.send(JSON.stringify({ tags: [tagName] }));');
         lines.push('    }');
@@ -2383,8 +2381,7 @@
         lines.push('                if (callback) callback();');
         lines.push('                return;');
         lines.push('            }');
-        lines.push('            addTagToContact(tagQueue[index]);');
-        lines.push('            setTimeout(function() { processNextTag(index + 1); }, 400);');
+        lines.push('            addTagToContact(tagQueue[index], function() { processNextTag(index + 1); });');
         lines.push('        }');
         lines.push('        if (tagQueue.length > 0) {');
         lines.push('            processNextTag(0);');
@@ -2957,8 +2954,6 @@
     var GITHUB_FILE_PATH = "ghl-buttons-config.json";
     var GITHUB_TOKEN_KEY = "ghl_github_token";
 
-    var GHL_API_KEY_STORAGE = "ghl_agency_api_key";
-
     // Load saved tokens on page load
     (function() {
         var saved = localStorage.getItem(GITHUB_TOKEN_KEY);
@@ -2967,13 +2962,6 @@
         }
         document.getElementById('github-token').addEventListener('input', function() {
             localStorage.setItem(GITHUB_TOKEN_KEY, this.value.trim());
-        });
-        var savedGhlKey = localStorage.getItem(GHL_API_KEY_STORAGE);
-        if (savedGhlKey) {
-            document.getElementById('ghl-api-key').value = savedGhlKey;
-        }
-        document.getElementById('ghl-api-key').addEventListener('input', function() {
-            localStorage.setItem(GHL_API_KEY_STORAGE, this.value.trim());
         });
     })();
 
