@@ -655,6 +655,13 @@
         </div>
         <p style="font-size:12px;color:#999;margin-top:8px;">Create a token at GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens (classic) with <code>public_repo</code> scope. This lets the configurator save the JSON config directly to the repo so you never have to manually update it.</p>
     </div>
+    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <div class="field-group" style="margin-top:0;">
+            <label>GHL Agency API Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(Private Integration Token &mdash; stored locally in your browser only)</span></label>
+            <input type="password" id="ghl-api-key" placeholder="pit-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="font-family:'Courier New',monospace;font-size:13px;">
+        </div>
+        <p style="font-size:12px;color:#999;margin-top:8px;">Create at Agency Settings &rarr; Integrations &rarr; Private Integrations. Select <code>contacts.write</code> and <code>contacts.readonly</code> scopes. This token is embedded in the generated script to add tags via the GHL API.</p>
+    </div>
     <div style="margin-bottom: 16px;">
         <button class="btn-outline" onclick="loadFromGitHub()">&#128229; Load from GitHub</button>
         <button class="btn-outline" onclick="loadExample()">Load Example Data</button>
@@ -2016,22 +2023,29 @@
             return;
         }
 
+        var ghlApiKey = document.getElementById('ghl-api-key').value.trim();
+        if (!ghlApiKey) {
+            showNotification('Please enter a GHL Agency API Key (Private Integration Token) for tag actions to work.');
+            return;
+        }
+
         var config = buildConfigArray();
         var configJSON = JSON.stringify(config, null, 4);
 
         // Generate the static script (same every time for the same URL)
-        var code = buildInjectionCode(configUrl);
+        var code = buildInjectionCode(configUrl, ghlApiKey);
         document.getElementById('code-output-script').value = code;
         document.getElementById('code-output-json').value = configJSON;
         switchTab('code');
         showNotification('Code generated! Copy the script AND the JSON config.');
     }
 
-    function buildInjectionCode(configUrl) {
+    function buildInjectionCode(configUrl, ghlApiKey) {
         // The entire injection script is built as a string.
         // We use ES5-compatible syntax throughout (no arrow functions, no template literals).
-        // The only dynamic value is the CONFIG_URL -- everything else is static.
+        // Dynamic values: CONFIG_URL and GHL_API_KEY.
         var escapedUrl = configUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        var escapedApiKey = ghlApiKey.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         var lines = [];
         lines.push('<script>');
         lines.push('/* ======================================================================');
@@ -2046,6 +2060,8 @@
         lines.push('');
         lines.push('    // ---- CONFIG SOURCE ----');
         lines.push('    var CONFIG_URL = "' + escapedUrl + '";');
+        lines.push('    var GHL_API_KEY = "' + escapedApiKey + '";');
+        lines.push('    var GHL_API_BASE = "https://services.leadconnectorhq.com";');
         lines.push('    var CONFIG_CACHE_KEY = "ghl_custom_buttons_config";');
         lines.push('    var AVAILABLE_BUTTONS = [];');
         lines.push('    var CUSTOM_ICONS = null;');
@@ -2058,56 +2074,6 @@
         lines.push('    var RETRY_INTERVAL = 500;');
         lines.push('    var retryCount = 0;');
         lines.push('    var lastUrl = "";');
-        lines.push('');
-        lines.push('    // ---- AUTH TOKEN STATE ----');
-        lines.push('    var _ghlAuthToken = null;');
-        lines.push('    var _tokenCapturedAt = 0;');
-        lines.push('    var TOKEN_MAX_AGE_MS = 45 * 60 * 1000;');
-        lines.push('');
-        lines.push('    // ---- XHR INTERCEPT (capture auth token from GHL API calls) ----');
-        lines.push('    var _origSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;');
-        lines.push('    XMLHttpRequest.prototype.setRequestHeader = function(name, value) {');
-        lines.push('        if (name === "Authorization" && value && value.indexOf("Bearer ") === 0) {');
-        lines.push('            var t = value.substring(7);');
-        lines.push('            if (t.split(".").length === 3) {');
-        lines.push('                _ghlAuthToken = t;');
-        lines.push('                _tokenCapturedAt = Date.now();');
-        lines.push('                console.log("[GHL Buttons] Token captured via XHR intercept");');
-        lines.push('            }');
-        lines.push('        }');
-        lines.push('        return _origSetRequestHeader.apply(this, arguments);');
-        lines.push('    };');
-        lines.push('');
-        lines.push('    // ---- FETCH INTERCEPT (capture auth token from modern fetch API calls) ----');
-        lines.push('    var _origFetch = window.fetch;');
-        lines.push('    window.fetch = function(url, opts) {');
-        lines.push('        try {');
-        lines.push('            if (opts && opts.headers) {');
-        lines.push('                var authVal = null;');
-        lines.push('                if (opts.headers instanceof Headers) {');
-        lines.push('                    authVal = opts.headers.get("Authorization");');
-        lines.push('                } else if (Array.isArray(opts.headers)) {');
-        lines.push('                    for (var h = 0; h < opts.headers.length; h++) {');
-        lines.push('                        if (opts.headers[h][0] === "Authorization") {');
-        lines.push('                            authVal = opts.headers[h][1];');
-        lines.push('                            break;');
-        lines.push('                        }');
-        lines.push('                    }');
-        lines.push('                } else if (typeof opts.headers === "object") {');
-        lines.push('                    authVal = opts.headers["Authorization"] || opts.headers["authorization"];');
-        lines.push('                }');
-        lines.push('                if (authVal && authVal.indexOf("Bearer ") === 0) {');
-        lines.push('                    var t = authVal.substring(7);');
-        lines.push('                    if (t.split(".").length === 3) {');
-        lines.push('                        _ghlAuthToken = t;');
-        lines.push('                        _tokenCapturedAt = Date.now();');
-        lines.push('                        console.log("[GHL Buttons] Token captured via fetch intercept");');
-        lines.push('                    }');
-        lines.push('                }');
-        lines.push('            }');
-        lines.push('        } catch(e) {}');
-        lines.push('        return _origFetch.apply(this, arguments);');
-        lines.push('    };');
         lines.push('');
         lines.push('    console.log("[GHL Buttons] Script loaded. Config URL: " + CONFIG_URL);');
         lines.push('');
@@ -2307,252 +2273,39 @@
         lines.push('        return match ? match[1] : null;');
         lines.push('    }');
         lines.push('');
-        lines.push('    function getLocationId() {');
-        lines.push('        var match = window.location.href.match(/location\\/([a-zA-Z0-9]+)/);');
-        lines.push('        return match ? match[1] : null;');
-        lines.push('    }');
-        lines.push('');
-        lines.push('    // ---- AUTH TOKEN EXTRACTION ----');
-        lines.push('    function isJWT(str) {');
-        lines.push('        if (!str || typeof str !== "string") return false;');
-        lines.push('        var parts = str.split(".");');
-        lines.push('        return parts.length === 3 && parts[0].length > 10 && parts[1].length > 10;');
-        lines.push('    }');
-        lines.push('');
-        lines.push('    function searchStorageForToken(storage) {');
-        lines.push('        try {');
-        lines.push('            for (var i = 0; i < storage.length; i++) {');
-        lines.push('                var key = storage.key(i);');
-        lines.push('                if (!key) continue;');
-        lines.push('                // Check firebase auth entries');
-        lines.push('                if (key.indexOf("firebase:authUser:") === 0) {');
-        lines.push('                    try {');
-        lines.push('                        var parsed = JSON.parse(storage.getItem(key));');
-        lines.push('                        if (parsed && parsed.stsTokenManager && parsed.stsTokenManager.accessToken) {');
-        lines.push('                            console.log("[GHL Buttons] Token found in storage (firebase key)");');
-        lines.push('                            return parsed.stsTokenManager.accessToken;');
-        lines.push('                        }');
-        lines.push('                    } catch(e) {}');
-        lines.push('                }');
-        lines.push('                // Check keys that might contain tokens');
-        lines.push('                var keyLower = key.toLowerCase();');
-        lines.push('                if (keyLower.indexOf("token") !== -1 || keyLower.indexOf("auth") !== -1 || keyLower.indexOf("jwt") !== -1) {');
-        lines.push('                    var val = storage.getItem(key);');
-        lines.push('                    if (isJWT(val)) {');
-        lines.push('                        console.log("[GHL Buttons] Token found in storage (key: " + key + ")");');
-        lines.push('                        return val;');
-        lines.push('                    }');
-        lines.push('                    // Try parsing as JSON with nested token');
-        lines.push('                    try {');
-        lines.push('                        var obj = JSON.parse(val);');
-        lines.push('                        var candidates = [obj.accessToken, obj.token, obj.access_token, obj.id_token, obj.idToken];');
-        lines.push('                        for (var c = 0; c < candidates.length; c++) {');
-        lines.push('                            if (isJWT(candidates[c])) {');
-        lines.push('                                console.log("[GHL Buttons] Token found in storage (key: " + key + ", nested)");');
-        lines.push('                                return candidates[c];');
-        lines.push('                            }');
-        lines.push('                        }');
-        lines.push('                        if (obj.stsTokenManager && isJWT(obj.stsTokenManager.accessToken)) {');
-        lines.push('                            console.log("[GHL Buttons] Token found in storage (key: " + key + ", stsTokenManager)");');
-        lines.push('                            return obj.stsTokenManager.accessToken;');
-        lines.push('                        }');
-        lines.push('                    } catch(e) {}');
-        lines.push('                }');
-        lines.push('            }');
-        lines.push('        } catch (e) {');
-        lines.push('            console.log("[GHL Buttons] Storage token search error:", e);');
-        lines.push('        }');
-        lines.push('        return null;');
-        lines.push('    }');
-        lines.push('');
-        lines.push('    function getTokenFromLocalStorage() {');
-        lines.push('        var token = searchStorageForToken(localStorage);');
-        lines.push('        if (!token) {');
-        lines.push('            try { token = searchStorageForToken(sessionStorage); } catch(e) {}');
-        lines.push('        }');
-        lines.push('        return token;');
-        lines.push('    }');
-        lines.push('');
-        lines.push('    function getTokenFromIndexedDB(callback) {');
-        lines.push('        try {');
-        lines.push('            var request = indexedDB.open("firebaseLocalStorageDb");');
-        lines.push('            request.onerror = function() { callback(null); };');
-        lines.push('            request.onsuccess = function() {');
-        lines.push('                try {');
-        lines.push('                    var db = request.result;');
-        lines.push('                    var tx = db.transaction("firebaseLocalStorage", "readonly");');
-        lines.push('                    var store = tx.objectStore("firebaseLocalStorage");');
-        lines.push('                    var getAllReq = store.getAll();');
-        lines.push('                    getAllReq.onsuccess = function() {');
-        lines.push('                        var items = getAllReq.result;');
-        lines.push('                        for (var i = 0; i < items.length; i++) {');
-        lines.push('                            var val = items[i].value || items[i];');
-        lines.push('                            if (val && val.stsTokenManager && val.stsTokenManager.accessToken) {');
-        lines.push('                                callback(val.stsTokenManager.accessToken);');
-        lines.push('                                return;');
-        lines.push('                            }');
-        lines.push('                        }');
-        lines.push('                        callback(null);');
-        lines.push('                    };');
-        lines.push('                    getAllReq.onerror = function() { callback(null); };');
-        lines.push('                } catch (e) {');
-        lines.push('                    callback(null);');
-        lines.push('                }');
-        lines.push('            };');
-        lines.push('        } catch (e) {');
-        lines.push('            callback(null);');
-        lines.push('        }');
-        lines.push('    }');
-        lines.push('');
-        lines.push('    function getAuthToken(callback) {');
-        lines.push('        // Check intercepted token first');
-        lines.push('        if (_ghlAuthToken && (Date.now() - _tokenCapturedAt) < TOKEN_MAX_AGE_MS) {');
-        lines.push('            console.log("[GHL Buttons] Using cached intercepted token");');
-        lines.push('            callback(_ghlAuthToken);');
+        lines.push('    // ---- TAG ADDITION (via GHL Public API v2) ----');
+        lines.push('    function addTagToContact(tagName) {');
+        lines.push('        console.log("[GHL Buttons] Adding tag via GHL API: " + tagName);');
+        lines.push('        var contactId = getContactId();');
+        lines.push('        if (!contactId) {');
+        lines.push('            showNotification("Could not determine contact ID from URL.", true);');
         lines.push('            return;');
         lines.push('        }');
-        lines.push('        // Try localStorage / sessionStorage');
-        lines.push('        var lsToken = getTokenFromLocalStorage();');
-        lines.push('        if (lsToken) {');
-        lines.push('            _ghlAuthToken = lsToken;');
-        lines.push('            _tokenCapturedAt = Date.now();');
-        lines.push('            callback(lsToken);');
+        lines.push('        if (!GHL_API_KEY) {');
+        lines.push('            showNotification("GHL API key not configured.", true);');
         lines.push('            return;');
         lines.push('        }');
-        lines.push('        // Try IndexedDB');
-        lines.push('        getTokenFromIndexedDB(function(idbToken) {');
-        lines.push('            if (idbToken) {');
-        lines.push('                console.log("[GHL Buttons] Token found in IndexedDB");');
-        lines.push('                _ghlAuthToken = idbToken;');
-        lines.push('                _tokenCapturedAt = Date.now();');
+        lines.push('        var xhr = new XMLHttpRequest();');
+        lines.push('        xhr.open("POST", GHL_API_BASE + "/contacts/" + contactId + "/tags", true);');
+        lines.push('        xhr.setRequestHeader("Content-Type", "application/json");');
+        lines.push('        xhr.setRequestHeader("Authorization", "Bearer " + GHL_API_KEY);');
+        lines.push('        xhr.setRequestHeader("Version", "2021-07-28");');
+        lines.push('        xhr.onreadystatechange = function() {');
+        lines.push('            if (xhr.readyState !== 4) return;');
+        lines.push('            if (xhr.status >= 200 && xhr.status < 300) {');
+        lines.push('                showNotification("Tag added: " + tagName);');
+        lines.push('                console.log("[GHL Buttons] Tag added successfully: " + tagName);');
         lines.push('            } else {');
-        lines.push('                console.log("[GHL Buttons] No token found in any source");');
-        lines.push('            }');
-        lines.push('            callback(idbToken);');
-        lines.push('        });');
-        lines.push('    }');
-        lines.push('');
-        lines.push('    // ---- TAG ADDITION (via GHL internal API) ----');
-        lines.push('    function _fetchAndAddTag(tagName, contactId, locationId, token) {');
-        lines.push('        var apiBase = "/v2/location/" + locationId;');
-        lines.push('        var getXhr = new XMLHttpRequest();');
-        lines.push('        getXhr.open("GET", apiBase + "/contacts/" + contactId, true);');
-        lines.push('        getXhr.setRequestHeader("Content-Type", "application/json");');
-        lines.push('        getXhr.setRequestHeader("Authorization", "Bearer " + token);');
-        lines.push('        getXhr.onreadystatechange = function() {');
-        lines.push('            if (getXhr.readyState !== 4) return;');
-        lines.push('            if (getXhr.status !== 200) {');
-        lines.push('                console.log("[GHL Buttons] Failed to fetch contact. Status: " + getXhr.status);');
-        lines.push('                showNotification("Failed to fetch contact data. Status: " + getXhr.status, true);');
-        lines.push('                return;');
-        lines.push('            }');
-        lines.push('            try {');
-        lines.push('                var data = JSON.parse(getXhr.responseText);');
-        lines.push('                var contact = data.contact || data;');
-        lines.push('                var currentTags = contact.tags || [];');
-        lines.push('                var tagLower = tagName.toLowerCase().trim();');
-        lines.push('                for (var i = 0; i < currentTags.length; i++) {');
-        lines.push('                    if (currentTags[i].toLowerCase().trim() === tagLower) {');
-        lines.push('                        showNotification("Tag already exists: " + tagName);');
-        lines.push('                        return;');
-        lines.push('                    }');
-        lines.push('                }');
-        lines.push('                currentTags.push(tagName);');
-        lines.push('                var putXhr = new XMLHttpRequest();');
-        lines.push('                putXhr.open("PUT", apiBase + "/contacts/" + contactId, true);');
-        lines.push('                putXhr.setRequestHeader("Content-Type", "application/json");');
-        lines.push('                putXhr.setRequestHeader("Authorization", "Bearer " + token);');
-        lines.push('                putXhr.onreadystatechange = function() {');
-        lines.push('                    if (putXhr.readyState !== 4) return;');
-        lines.push('                    if (putXhr.status >= 200 && putXhr.status < 300) {');
-        lines.push('                        showNotification("Tag added: " + tagName);');
-        lines.push('                        console.log("[GHL Buttons] Tag added successfully: " + tagName);');
-        lines.push('                    } else {');
-        lines.push('                        showNotification("Failed to add tag. Status: " + putXhr.status, true);');
-        lines.push('                        console.log("[GHL Buttons] Tag update failed. Status: " + putXhr.status);');
-        lines.push('                    }');
-        lines.push('                };');
-        lines.push('                putXhr.send(JSON.stringify({ tags: currentTags }));');
-        lines.push('            } catch(e) {');
-        lines.push('                console.log("[GHL Buttons] Error parsing contact data:", e);');
-        lines.push('                showNotification("Error processing contact data.", true);');
+        lines.push('                var errMsg = "Failed to add tag. Status: " + xhr.status;');
+        lines.push('                try {');
+        lines.push('                    var errData = JSON.parse(xhr.responseText);');
+        lines.push('                    if (errData.message) errMsg += " - " + errData.message;');
+        lines.push('                } catch(e) {}');
+        lines.push('                showNotification(errMsg, true);');
+        lines.push('                console.log("[GHL Buttons] Tag add failed:", xhr.status, xhr.responseText);');
         lines.push('            }');
         lines.push('        };');
-        lines.push('        getXhr.send();');
-        lines.push('    }');
-        lines.push('');
-        lines.push('    function addTagToContact(tagName) {');
-        lines.push('        console.log("[GHL Buttons] Adding tag via API: " + tagName);');
-        lines.push('        var contactId = getContactId();');
-        lines.push('        var locationId = getLocationId();');
-        lines.push('        if (!contactId || !locationId) {');
-        lines.push('            showNotification("Could not determine contact or location ID from URL.", true);');
-        lines.push('            return;');
-        lines.push('        }');
-        lines.push('        getAuthToken(function(token) {');
-        lines.push('            if (!token) {');
-        lines.push('                showNotification("Auth token not available. Please refresh and try again.", true);');
-        lines.push('                return;');
-        lines.push('            }');
-        lines.push('            var apiBase = "/v2/location/" + locationId;');
-        lines.push('            var getXhr = new XMLHttpRequest();');
-        lines.push('            getXhr.open("GET", apiBase + "/contacts/" + contactId, true);');
-        lines.push('            getXhr.setRequestHeader("Content-Type", "application/json");');
-        lines.push('            getXhr.setRequestHeader("Authorization", "Bearer " + token);');
-        lines.push('            getXhr.onreadystatechange = function() {');
-        lines.push('                if (getXhr.readyState !== 4) return;');
-        lines.push('                if (getXhr.status === 401) {');
-        lines.push('                    console.log("[GHL Buttons] 401 on GET -- refreshing token and retrying...");');
-        lines.push('                    _ghlAuthToken = null;');
-        lines.push('                    _tokenCapturedAt = 0;');
-        lines.push('                    getAuthToken(function(newToken) {');
-        lines.push('                        if (newToken) {');
-        lines.push('                            _fetchAndAddTag(tagName, contactId, locationId, newToken);');
-        lines.push('                        } else {');
-        lines.push('                            showNotification("Auth expired. Please refresh the page.", true);');
-        lines.push('                        }');
-        lines.push('                    });');
-        lines.push('                    return;');
-        lines.push('                }');
-        lines.push('                if (getXhr.status !== 200) {');
-        lines.push('                    console.log("[GHL Buttons] Failed to fetch contact. Status: " + getXhr.status);');
-        lines.push('                    showNotification("Failed to fetch contact data. Status: " + getXhr.status, true);');
-        lines.push('                    return;');
-        lines.push('                }');
-        lines.push('                try {');
-        lines.push('                    var data = JSON.parse(getXhr.responseText);');
-        lines.push('                    var contact = data.contact || data;');
-        lines.push('                    var currentTags = contact.tags || [];');
-        lines.push('                    var tagLower = tagName.toLowerCase().trim();');
-        lines.push('                    for (var i = 0; i < currentTags.length; i++) {');
-        lines.push('                        if (currentTags[i].toLowerCase().trim() === tagLower) {');
-        lines.push('                            showNotification("Tag already exists: " + tagName);');
-        lines.push('                            return;');
-        lines.push('                        }');
-        lines.push('                    }');
-        lines.push('                    currentTags.push(tagName);');
-        lines.push('                    var putXhr = new XMLHttpRequest();');
-        lines.push('                    putXhr.open("PUT", apiBase + "/contacts/" + contactId, true);');
-        lines.push('                    putXhr.setRequestHeader("Content-Type", "application/json");');
-        lines.push('                    putXhr.setRequestHeader("Authorization", "Bearer " + token);');
-        lines.push('                    putXhr.onreadystatechange = function() {');
-        lines.push('                        if (putXhr.readyState !== 4) return;');
-        lines.push('                        if (putXhr.status >= 200 && putXhr.status < 300) {');
-        lines.push('                            showNotification("Tag added: " + tagName);');
-        lines.push('                            console.log("[GHL Buttons] Tag added successfully: " + tagName);');
-        lines.push('                        } else {');
-        lines.push('                            showNotification("Failed to add tag. Status: " + putXhr.status, true);');
-        lines.push('                            console.log("[GHL Buttons] Tag update failed. Status: " + putXhr.status);');
-        lines.push('                        }');
-        lines.push('                    };');
-        lines.push('                    putXhr.send(JSON.stringify({ tags: currentTags }));');
-        lines.push('                } catch(e) {');
-        lines.push('                    console.log("[GHL Buttons] Error parsing contact data:", e);');
-        lines.push('                    showNotification("Error processing contact data.", true);');
-        lines.push('                }');
-        lines.push('            };');
-        lines.push('            getXhr.send();');
-        lines.push('        });');
+        lines.push('        xhr.send(JSON.stringify({ tags: [tagName] }));');
         lines.push('    }');
         lines.push('');
         // ---- CUSTOM FIELD DOM MANIPULATION ----
@@ -3155,16 +2908,6 @@
         lines.push('        }');
         lines.push('        tryInject();');
         lines.push('        watchRouteChanges();');
-        lines.push('        // Warm up token capture -- try to grab a token early');
-        lines.push('        setTimeout(function() {');
-        lines.push('            getAuthToken(function(token) {');
-        lines.push('                if (token) {');
-        lines.push('                    console.log("[GHL Buttons] Token warm-up successful");');
-        lines.push('                } else {');
-        lines.push('                    console.log("[GHL Buttons] Token warm-up: no token yet (will capture from next API call)");');
-        lines.push('                }');
-        lines.push('            });');
-        lines.push('        }, 2000);');
         lines.push('    }');
         lines.push('');
         lines.push('    fetchConfig(function() {');
@@ -3214,7 +2957,9 @@
     var GITHUB_FILE_PATH = "ghl-buttons-config.json";
     var GITHUB_TOKEN_KEY = "ghl_github_token";
 
-    // Load saved token on page load
+    var GHL_API_KEY_STORAGE = "ghl_agency_api_key";
+
+    // Load saved tokens on page load
     (function() {
         var saved = localStorage.getItem(GITHUB_TOKEN_KEY);
         if (saved) {
@@ -3222,6 +2967,13 @@
         }
         document.getElementById('github-token').addEventListener('input', function() {
             localStorage.setItem(GITHUB_TOKEN_KEY, this.value.trim());
+        });
+        var savedGhlKey = localStorage.getItem(GHL_API_KEY_STORAGE);
+        if (savedGhlKey) {
+            document.getElementById('ghl-api-key').value = savedGhlKey;
+        }
+        document.getElementById('ghl-api-key').addEventListener('input', function() {
+            localStorage.setItem(GHL_API_KEY_STORAGE, this.value.trim());
         });
     })();
 
