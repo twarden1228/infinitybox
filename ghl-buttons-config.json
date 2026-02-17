@@ -92,18 +92,6 @@
         "type": "dropdown",
         "options": [
             {
-                "id": "opt_1771092813259_9",
-                "name": "Americo",
-                "type": "link",
-                "value": "https://account.americoagent.com/"
-            },
-            {
-                "id": "opt_1771092866717_10",
-                "name": "Mutual of Omaha",
-                "type": "link",
-                "value": "https://accounts.mutualofomaha.com/samlAuthnRequest"
-            },
-            {
                 "id": "opt_1771093092939_11",
                 "name": "Ethos",
                 "type": "link",
@@ -132,6 +120,18 @@
                 "name": "F&G",
                 "type": "link",
                 "value": "https://saleslink.fglife.com"
+            },
+            {
+                "id": "opt_1771349089803_2",
+                "name": "Americo",
+                "type": "link",
+                "value": "https://account.americoagent.com/Identity/Account/Login"
+            },
+            {
+                "id": "opt_1771349157360_3",
+                "name": "Mutual of Omaha",
+                "type": "link",
+                "value": "https://accounts.mutualofomaha.com/"
             }
         ]
     },
