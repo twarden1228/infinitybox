@@ -650,14 +650,14 @@
     </div>
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <div class="field-group" style="margin-top:0;">
-            <label>Backend URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(your Vercel deployment URL for tag API calls)</span></label>
-            <input type="text" id="backend-url" value="" placeholder="https://your-app.vercel.app" style="font-family:'Courier New',monospace;font-size:13px;">
+            <label>Backend URL <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(your Supabase Edge Functions URL for tag API calls)</span></label>
+            <input type="text" id="backend-url" value="" placeholder="https://your-project.supabase.co/functions/v1" style="font-family:'Courier New',monospace;font-size:13px;">
         </div>
         <div class="field-group">
             <label>API Secret <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(authenticates button clicks to your backend)</span></label>
             <input type="password" id="api-secret" value="" placeholder="your-api-secret" style="font-family:'Courier New',monospace;font-size:13px;">
         </div>
-        <p style="font-size:12px;color:#999;margin-top:8px;">Tag buttons call your backend (via OAuth), not GHL directly. Deploy the backend to Vercel and enter the URL + API secret here. The backend handles token management for all sub-accounts automatically.</p>
+        <p style="font-size:12px;color:#999;margin-top:8px;">Tag buttons call your backend (via OAuth), not GHL directly. Deploy the Supabase Edge Functions and enter the base URL + API secret here. The backend handles token management for all sub-accounts automatically.</p>
     </div>
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <div class="field-group" style="margin-top:0;">
@@ -2294,7 +2294,7 @@
         lines.push('            return;');
         lines.push('        }');
         lines.push('        var xhr = new XMLHttpRequest();');
-        lines.push('        xhr.open("POST", BACKEND_URL + "/api/add-tag", true);');
+        lines.push('        xhr.open("POST", BACKEND_URL + "/add-tag", true);');
         lines.push('        xhr.setRequestHeader("Content-Type", "application/json");');
         lines.push('        xhr.setRequestHeader("X-Api-Key", API_SECRET);');
         lines.push('        xhr.onreadystatechange = function() {');
