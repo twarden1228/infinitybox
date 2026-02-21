@@ -1936,6 +1936,57 @@
             '.gcb-form-btn-submit { background:#3b82f6;color:#fff; }',
             '.gcb-form-btn-submit:hover { background:#2563eb; }',
             '.gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }',
+            '@keyframes gcb-df-popIn { from{opacity:0;transform:scale(0.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }',
+            '@keyframes gcb-df-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }',
+            '@keyframes gcb-df-spin { to{transform:rotate(360deg)} }',
+            '@keyframes gcb-df-scaleIn { from{transform:scale(0)} to{transform:scale(1)} }',
+            '.gcb-df-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10020;display:flex;align-items:center;justify-content:center; }',
+            '.gcb-df-popup { background:#fff;border-radius:16px;width:480px;max-width:92vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,0.05),0 24px 80px rgba(0,0,0,0.35),0 8px 24px rgba(0,0,0,0.15);font-family:"DM Sans",-apple-system,BlinkMacSystemFont,sans-serif;animation:gcb-df-popIn 0.3s cubic-bezier(0.16,1,0.3,1); }',
+            '.gcb-df-header { padding:24px 28px 20px;background:linear-gradient(135deg,#1e3a5f 0%,#0f2440 100%);position:relative;overflow:hidden; }',
+            '.gcb-df-header::before { content:"";position:absolute;top:-30px;right:-20px;width:120px;height:120px;background:rgba(255,255,255,0.04);border-radius:50%; }',
+            '.gcb-df-header::after { content:"";position:absolute;bottom:-40px;left:30%;width:180px;height:180px;background:rgba(255,255,255,0.02);border-radius:50%; }',
+            '.gcb-df-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.25);color:#6ee7b7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px; }',
+            '.gcb-df-badge svg { width:12px;height:12px; }',
+            '.gcb-df-title { font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;position:relative;z-index:1;margin:0; }',
+            '.gcb-df-subtitle { font-size:13px;color:rgba(255,255,255,0.55);margin-top:4px;position:relative;z-index:1; }',
+            '.gcb-df-progress { height:3px;background:#f1f5f9;position:relative; }',
+            '.gcb-df-progress-fill { height:100%;background:linear-gradient(90deg,#3b82f6,#2563eb);width:0%;transition:width 0.4s ease;border-radius:0 2px 2px 0; }',
+            '.gcb-df-body { padding:24px 28px;overflow-y:auto;flex:1; }',
+            '.gcb-df-body::-webkit-scrollbar { width:5px; }',
+            '.gcb-df-body::-webkit-scrollbar-thumb { background:#cbd5e1;border-radius:5px; }',
+            '.gcb-df-group { margin-bottom:20px; }',
+            '.gcb-df-label { display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#334155;margin-bottom:7px;letter-spacing:0.01em; }',
+            '.gcb-df-label .gcb-df-req { color:#ef4444;font-size:14px;line-height:1; }',
+            '.gcb-df-label-icon { width:16px;height:16px;color:#94a3b8; }',
+            '.gcb-df-input { width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#1e293b;background:#f8fafc;transition:all 0.2s ease;font-family:inherit;box-sizing:border-box;outline:none; }',
+            '.gcb-df-input::placeholder { color:#a0aec0; }',
+            '.gcb-df-input:hover { border-color:#cbd5e1;background:#fff; }',
+            '.gcb-df-input:focus { border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.1); }',
+            '.gcb-df-input.gcb-df-has-error { border-color:#ef4444;background:#fef2f2; }',
+            '.gcb-df-input.gcb-df-has-error:focus { box-shadow:0 0 0 3px rgba(239,68,68,0.1); }',
+            "select.gcb-df-input { appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer; }",
+            'textarea.gcb-df-input { resize:vertical;min-height:80px; }',
+            '.gcb-df-money-wrap { position:relative; }',
+            '.gcb-df-money-symbol { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:14px;font-weight:500;pointer-events:none; }',
+            '.gcb-df-money-wrap .gcb-df-input { padding-left:28px; }',
+            '.gcb-df-error-msg { font-size:12px;color:#ef4444;margin-top:5px;display:flex;align-items:center;gap:4px;opacity:0;transform:translateY(-4px);transition:all 0.2s; }',
+            '.gcb-df-error-msg.gcb-df-visible { opacity:1;transform:translateY(0); }',
+            '.gcb-df-error-msg svg { width:12px;height:12px;flex-shrink:0; }',
+            '.gcb-df-divider { height:1px;background:#f1f5f9;margin:4px 0 20px; }',
+            '.gcb-df-footer { padding:16px 28px 20px;border-top:1px solid #f1f5f9;background:#fafbfc; }',
+            '.gcb-df-footer-hint { font-size:11px;color:#94a3b8;text-align:center;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:4px; }',
+            '.gcb-df-footer-hint svg { width:12px;height:12px; }',
+            '.gcb-df-submit { width:100%;padding:13px 24px;background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden; }',
+            '.gcb-df-submit:hover { transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,0.35); }',
+            '.gcb-df-submit:active { transform:translateY(0); }',
+            '.gcb-df-submit:disabled { opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none; }',
+            '.gcb-df-submit svg { width:16px;height:16px; }',
+            '.gcb-df-spinner { width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:gcb-df-spin 0.6s linear infinite; }',
+            '.gcb-df-success { display:none;text-align:center;padding:48px 28px; }',
+            '.gcb-df-success-circle { width:64px;height:64px;background:linear-gradient(135deg,#10b981,#059669);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:gcb-df-scaleIn 0.4s cubic-bezier(0.16,1,0.3,1); }',
+            '.gcb-df-success-circle svg { width:28px;height:28px;color:#fff; }',
+            '.gcb-df-success h3 { font-size:18px;font-weight:700;color:#1e293b;margin:0 0 6px; }',
+            '.gcb-df-success p { font-size:14px;color:#64748b;margin:0; }',
             '.gcb-icon-toggle svg { color:#7c3aed; }',
             '.gcb-toggle-container { display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit; }',
             '.gcb-toggle-container:hover { border-color:#9ca3af; }',
@@ -2306,6 +2357,54 @@
         lines.push('                ".gcb-form-btn-submit { background:#3b82f6;color:#fff; }",');
         lines.push('                ".gcb-form-btn-submit:hover { background:#2563eb; }",');
         lines.push('                ".gcb-form-btn-submit:disabled { opacity:0.6;cursor:not-allowed; }",');
+        lines.push('                "@keyframes gcb-df-popIn { from{opacity:0;transform:scale(0.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }",');
+        lines.push('                "@keyframes gcb-df-shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }",');
+        lines.push('                "@keyframes gcb-df-spin { to{transform:rotate(360deg)} }",');
+        lines.push('                "@keyframes gcb-df-scaleIn { from{transform:scale(0)} to{transform:scale(1)} }",');
+        lines.push('                ".gcb-df-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10020;display:flex;align-items:center;justify-content:center; }",');
+        lines.push('                ".gcb-df-popup { background:#fff;border-radius:16px;width:480px;max-width:92vw;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px rgba(0,0,0,0.05),0 24px 80px rgba(0,0,0,0.35),0 8px 24px rgba(0,0,0,0.15);font-family:DM Sans,-apple-system,BlinkMacSystemFont,sans-serif;animation:gcb-df-popIn 0.3s cubic-bezier(0.16,1,0.3,1); }",');
+        lines.push('                ".gcb-df-header { padding:24px 28px 20px;background:linear-gradient(135deg,#1e3a5f 0%,#0f2440 100%);position:relative;overflow:hidden; }",');
+        lines.push("                \".gcb-df-header::before { content:'';position:absolute;top:-30px;right:-20px;width:120px;height:120px;background:rgba(255,255,255,0.04);border-radius:50%; }\",");
+        lines.push("                \".gcb-df-header::after { content:'';position:absolute;bottom:-40px;left:30%;width:180px;height:180px;background:rgba(255,255,255,0.02);border-radius:50%; }\",");
+        lines.push('                ".gcb-df-badge { display:inline-flex;align-items:center;gap:6px;background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.25);color:#6ee7b7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px; }",');
+        lines.push('                ".gcb-df-badge svg { width:12px;height:12px; }",');
+        lines.push('                ".gcb-df-title { font-size:20px;font-weight:700;color:#fff;letter-spacing:-0.3px;position:relative;z-index:1;margin:0; }",');
+        lines.push('                ".gcb-df-subtitle { font-size:13px;color:rgba(255,255,255,0.55);margin-top:4px;position:relative;z-index:1; }",');
+        lines.push('                ".gcb-df-progress { height:3px;background:#f1f5f9;position:relative; }",');
+        lines.push('                ".gcb-df-progress-fill { height:100%;background:linear-gradient(90deg,#3b82f6,#2563eb);width:0%;transition:width 0.4s ease;border-radius:0 2px 2px 0; }",');
+        lines.push('                ".gcb-df-body { padding:24px 28px;overflow-y:auto;flex:1; }",');
+        lines.push('                ".gcb-df-group { margin-bottom:20px; }",');
+        lines.push('                ".gcb-df-label { display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#334155;margin-bottom:7px;letter-spacing:0.01em; }",');
+        lines.push('                ".gcb-df-label .gcb-df-req { color:#ef4444;font-size:14px;line-height:1; }",');
+        lines.push('                ".gcb-df-label-icon { width:16px;height:16px;color:#94a3b8; }",');
+        lines.push('                ".gcb-df-input { width:100%;padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;color:#1e293b;background:#f8fafc;transition:all 0.2s ease;font-family:inherit;box-sizing:border-box;outline:none; }",');
+        lines.push('                ".gcb-df-input:hover { border-color:#cbd5e1;background:#fff; }",');
+        lines.push('                ".gcb-df-input:focus { border-color:#3b82f6;background:#fff;box-shadow:0 0 0 3px rgba(59,130,246,0.1); }",');
+        lines.push('                ".gcb-df-input.gcb-df-has-error { border-color:#ef4444;background:#fef2f2; }",');
+        lines.push('                ".gcb-df-input.gcb-df-has-error:focus { box-shadow:0 0 0 3px rgba(239,68,68,0.1); }",');
+        lines.push("                \"select.gcb-df-input { appearance:none;background-image:url(\\\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\\\");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer; }\",");
+        lines.push('                "textarea.gcb-df-input { resize:vertical;min-height:80px; }",');
+        lines.push('                ".gcb-df-money-wrap { position:relative; }",');
+        lines.push('                ".gcb-df-money-symbol { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:14px;font-weight:500;pointer-events:none; }",');
+        lines.push('                ".gcb-df-money-wrap .gcb-df-input { padding-left:28px; }",');
+        lines.push('                ".gcb-df-error-msg { font-size:12px;color:#ef4444;margin-top:5px;display:flex;align-items:center;gap:4px;opacity:0;transform:translateY(-4px);transition:all 0.2s; }",');
+        lines.push('                ".gcb-df-error-msg.gcb-df-visible { opacity:1;transform:translateY(0); }",');
+        lines.push('                ".gcb-df-error-msg svg { width:12px;height:12px;flex-shrink:0; }",');
+        lines.push('                ".gcb-df-divider { height:1px;background:#f1f5f9;margin:4px 0 20px; }",');
+        lines.push('                ".gcb-df-footer { padding:16px 28px 20px;border-top:1px solid #f1f5f9;background:#fafbfc; }",');
+        lines.push('                ".gcb-df-footer-hint { font-size:11px;color:#94a3b8;text-align:center;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:4px; }",');
+        lines.push('                ".gcb-df-footer-hint svg { width:12px;height:12px; }",');
+        lines.push('                ".gcb-df-submit { width:100%;padding:13px 24px;background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden; }",');
+        lines.push('                ".gcb-df-submit:hover { transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,0.35); }",');
+        lines.push('                ".gcb-df-submit:active { transform:translateY(0); }",');
+        lines.push('                ".gcb-df-submit:disabled { opacity:0.6;cursor:not-allowed;transform:none;box-shadow:none; }",');
+        lines.push('                ".gcb-df-submit svg { width:16px;height:16px; }",');
+        lines.push('                ".gcb-df-spinner { width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:gcb-df-spin 0.6s linear infinite; }",');
+        lines.push('                ".gcb-df-success { display:none;text-align:center;padding:48px 28px; }",');
+        lines.push('                ".gcb-df-success-circle { width:64px;height:64px;background:linear-gradient(135deg,#10b981,#059669);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:gcb-df-scaleIn 0.4s cubic-bezier(0.16,1,0.3,1); }",');
+        lines.push('                ".gcb-df-success-circle svg { width:28px;height:28px;color:#fff; }",');
+        lines.push('                ".gcb-df-success h3 { font-size:18px;font-weight:700;color:#1e293b;margin:0 0 6px; }",');
+        lines.push('                ".gcb-df-success p { font-size:14px;color:#64748b;margin:0; }",');
         lines.push('                ".gcb-icon-toggle svg { color:#7c3aed; }",');
         lines.push('                ".gcb-toggle-container { display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit; }",');
         lines.push('                ".gcb-toggle-container:hover { border-color:#9ca3af; }",');
@@ -2713,7 +2812,7 @@
 
         // ---- DYNAMIC FORM: FETCH AND SHOW ----
         lines.push('    // ---- DYNAMIC FORM ----');
-        lines.push('    function fetchAndShowDynamicForm(optionTag, onComplete) {');
+        lines.push('    function fetchAndShowDynamicForm(optionTag, badgeName, onComplete) {');
         lines.push('        var locationId = getLocationId();');
         lines.push('        var contactId = getContactId();');
         lines.push('        if (!locationId || !contactId) {');
@@ -2731,7 +2830,7 @@
         lines.push('                try {');
         lines.push('                    var result = JSON.parse(xhr.responseText);');
         lines.push('                    if (result.fields && result.fields.length > 0) {');
-        lines.push('                        showDynamicFormPopup(result.fields, optionTag, onComplete);');
+        lines.push('                        showDynamicFormPopup(result.fields, optionTag, badgeName, onComplete);');
         lines.push('                    } else {');
         lines.push('                        showNotification("No form fields found in Policy Info folder.", true);');
         lines.push('                        if (optionTag) addTagToContact(optionTag, onComplete);');
@@ -2748,47 +2847,96 @@
         lines.push('        xhr.send(JSON.stringify({ locationId: locationId }));');
         lines.push('    }');
         lines.push('');
-        lines.push('    function showDynamicFormPopup(fields, optionTag, onComplete) {');
-        lines.push('        var existing = document.getElementById("gcb-form-overlay");');
+        lines.push('    function showDynamicFormPopup(fields, optionTag, badgeName, onComplete) {');
+        lines.push('        var existing = document.getElementById("gcb-df-overlay");');
         lines.push('        if (existing) existing.parentNode.removeChild(existing);');
         lines.push('');
+        lines.push('        // Load DM Sans font');
+        lines.push('        if (!document.getElementById("gcb-df-font")) {');
+        lines.push('            var fontLink = document.createElement("link");');
+        lines.push('            fontLink.id = "gcb-df-font";');
+        lines.push('            fontLink.rel = "stylesheet";');
+        lines.push('            fontLink.href = "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap";');
+        lines.push('            document.head.appendChild(fontLink);');
+        lines.push('        }');
+        lines.push('');
+        lines.push('        var SVG_ERR = \'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>\';');
+        lines.push('        var SVG_CHECK_BADGE = \'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>\';');
+        lines.push('        var SVG_CHECK = \'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>\';');
+        lines.push('        var SVG_SHIELD = \'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>\';');
+        lines.push('');
+        lines.push('        var FIELD_ICONS = {');
+        lines.push('            text: \'<svg class="gcb-df-label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>\',');
+        lines.push('            select: \'<svg class="gcb-df-label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>\',');
+        lines.push('            date: \'<svg class="gcb-df-label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>\',');
+        lines.push('            money: \'<svg class="gcb-df-label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>\',');
+        lines.push('            textarea: \'<svg class="gcb-df-label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>\'');
+        lines.push('        };');
+        lines.push('');
+        lines.push('        // Determine if field is monetary by name heuristic');
+        lines.push('        function isMonetary(field) {');
+        lines.push('            var n = field.name.toLowerCase();');
+        lines.push('            return n.indexOf("premium") >= 0 || n.indexOf("amount") >= 0 || n.indexOf("price") >= 0 || n.indexOf("cost") >= 0 || n.indexOf("payment") >= 0 || n.indexOf("coverage") >= 0;');
+        lines.push('        }');
+        lines.push('');
         lines.push('        var overlay = document.createElement("div");');
-        lines.push('        overlay.id = "gcb-form-overlay";');
-        lines.push('        overlay.className = "gcb-form-overlay";');
+        lines.push('        overlay.id = "gcb-df-overlay";');
+        lines.push('        overlay.className = "gcb-df-overlay";');
         lines.push('');
         lines.push('        var popup = document.createElement("div");');
-        lines.push('        popup.className = "gcb-form-popup";');
+        lines.push('        popup.className = "gcb-df-popup";');
         lines.push('');
+        lines.push('        // ---- HEADER ----');
         lines.push('        var header = document.createElement("div");');
-        lines.push('        header.className = "gcb-form-header";');
-        lines.push('        var title = document.createElement("h3");');
-        lines.push('        title.textContent = "Policy Info";');
-        lines.push('        var closeBtn = document.createElement("button");');
-        lines.push('        closeBtn.className = "gcb-form-close";');
-        lines.push('        closeBtn.innerHTML = "&times;";');
-        lines.push('        closeBtn.addEventListener("click", function() {');
-        lines.push('            overlay.parentNode.removeChild(overlay);');
-        lines.push('        });');
+        lines.push('        header.className = "gcb-df-header";');
+        lines.push('        var badge = document.createElement("div");');
+        lines.push('        badge.className = "gcb-df-badge";');
+        lines.push('        badge.innerHTML = SVG_CHECK_BADGE + " " + (badgeName || "Approved / Sold");');
+        lines.push('        header.appendChild(badge);');
+        lines.push('        var title = document.createElement("h2");');
+        lines.push('        title.className = "gcb-df-title";');
+        lines.push('        title.textContent = "Enter Policy Details";');
         lines.push('        header.appendChild(title);');
-        lines.push('        header.appendChild(closeBtn);');
+        lines.push('        var subtitle = document.createElement("p");');
+        lines.push('        subtitle.className = "gcb-df-subtitle";');
+        lines.push('        subtitle.textContent = "Complete all fields to save the policy record";');
+        lines.push('        header.appendChild(subtitle);');
         lines.push('        popup.appendChild(header);');
         lines.push('');
-        lines.push('        var body = document.createElement("div");');
-        lines.push('        body.className = "gcb-form-body";');
+        lines.push('        // ---- PROGRESS BAR ----');
+        lines.push('        var progressWrap = document.createElement("div");');
+        lines.push('        progressWrap.className = "gcb-df-progress";');
+        lines.push('        var progressFill = document.createElement("div");');
+        lines.push('        progressFill.className = "gcb-df-progress-fill";');
+        lines.push('        progressWrap.appendChild(progressFill);');
+        lines.push('        popup.appendChild(progressWrap);');
         lines.push('');
+        lines.push('        // ---- BODY ----');
+        lines.push('        var body = document.createElement("div");');
+        lines.push('        body.className = "gcb-df-body";');
+        lines.push('        body.id = "gcb-df-body";');
+        lines.push('');
+        lines.push('        var allInputs = [];');
         lines.push('        for (var i = 0; i < fields.length; i++) {');
-        lines.push('            (function(field) {');
+        lines.push('            (function(field, idx) {');
         lines.push('                var group = document.createElement("div");');
-        lines.push('                group.className = "gcb-form-group";');
+        lines.push('                group.className = "gcb-df-group";');
+        lines.push('');
         lines.push('                var label = document.createElement("label");');
-        lines.push('                label.className = "gcb-form-label";');
-        lines.push('                label.textContent = field.name;');
+        lines.push('                label.className = "gcb-df-label";');
+        lines.push('                var isMoney = isMonetary(field);');
+        lines.push('                var iconKey = isMoney ? "money" : (field.dataType || "text");');
+        lines.push('                if (FIELD_ICONS[iconKey]) label.innerHTML = FIELD_ICONS[iconKey];');
+        lines.push('                else label.innerHTML = FIELD_ICONS.text;');
+        lines.push('                var labelText = document.createTextNode(field.name);');
+        lines.push('                label.appendChild(labelText);');
         lines.push('                group.appendChild(label);');
         lines.push('');
         lines.push('                var input;');
+        lines.push('                var inputWrap = null;');
         lines.push('                if (field.dataType === "select" && field.options && field.options.length > 0) {');
         lines.push('                    input = document.createElement("select");');
-        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    input.className = "gcb-df-input";');
         lines.push('                    var emptyOpt = document.createElement("option");');
         lines.push('                    emptyOpt.value = "";');
         lines.push('                    emptyOpt.textContent = "Select...";');
@@ -2803,60 +2951,140 @@
         lines.push('                    }');
         lines.push('                } else if (field.dataType === "textarea") {');
         lines.push('                    input = document.createElement("textarea");');
-        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    input.className = "gcb-df-input";');
         lines.push('                    input.rows = 3;');
         lines.push('                    if (field.placeholder) input.placeholder = field.placeholder;');
         lines.push('                } else if (field.dataType === "date") {');
         lines.push('                    input = document.createElement("input");');
         lines.push('                    input.type = "date";');
-        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    input.className = "gcb-df-input";');
+        lines.push('                } else if (isMoney) {');
+        lines.push('                    inputWrap = document.createElement("div");');
+        lines.push('                    inputWrap.className = "gcb-df-money-wrap";');
+        lines.push('                    var sym = document.createElement("span");');
+        lines.push('                    sym.className = "gcb-df-money-symbol";');
+        lines.push('                    sym.textContent = "$";');
+        lines.push('                    inputWrap.appendChild(sym);');
+        lines.push('                    input = document.createElement("input");');
+        lines.push('                    input.type = "text";');
+        lines.push('                    input.inputMode = "decimal";');
+        lines.push('                    input.className = "gcb-df-input";');
+        lines.push('                    input.placeholder = "0.00";');
+        lines.push('                    inputWrap.appendChild(input);');
         lines.push('                } else {');
         lines.push('                    input = document.createElement("input");');
         lines.push('                    input.type = "text";');
-        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    input.className = "gcb-df-input";');
         lines.push('                    if (field.placeholder) input.placeholder = field.placeholder;');
+        lines.push('                    else input.placeholder = "Enter " + field.name.toLowerCase();');
         lines.push('                }');
         lines.push('                input.setAttribute("data-field-id", field.id);');
-        lines.push('                group.appendChild(input);');
+        lines.push('                allInputs.push(input);');
+        lines.push('');
+        lines.push('                if (inputWrap) group.appendChild(inputWrap);');
+        lines.push('                else group.appendChild(input);');
         lines.push('');
         lines.push('                var errMsg = document.createElement("div");');
-        lines.push('                errMsg.className = "gcb-form-error";');
+        lines.push('                errMsg.className = "gcb-df-error-msg";');
         lines.push('                errMsg.setAttribute("data-err-for", field.id);');
+        lines.push('                errMsg.innerHTML = SVG_ERR + " <span>" + field.name + " is required</span>";');
         lines.push('                group.appendChild(errMsg);');
+        lines.push('');
+        lines.push('                // Clear error on focus');
+        lines.push('                input.addEventListener("focus", function() {');
+        lines.push('                    this.classList.remove("gcb-df-has-error");');
+        lines.push('                    var e = popup.querySelector(\'[data-err-for="\' + field.id + \'"]\');');
+        lines.push('                    if (e) e.classList.remove("gcb-df-visible");');
+        lines.push('                });');
+        lines.push('');
+        lines.push('                // Update progress on input');
+        lines.push('                input.addEventListener("input", updateProgress);');
+        lines.push('                input.addEventListener("change", updateProgress);');
+        lines.push('');
         lines.push('                body.appendChild(group);');
-        lines.push('            })(fields[i]);');
+        lines.push('            })(fields[i], i);');
         lines.push('        }');
         lines.push('        popup.appendChild(body);');
         lines.push('');
+        lines.push('        // ---- FOOTER ----');
         lines.push('        var footer = document.createElement("div");');
-        lines.push('        footer.className = "gcb-form-footer";');
-        lines.push('        var cancelBtn = document.createElement("button");');
-        lines.push('        cancelBtn.className = "gcb-form-btn gcb-form-btn-cancel";');
-        lines.push('        cancelBtn.textContent = "Cancel";');
-        lines.push('        cancelBtn.addEventListener("click", function() {');
-        lines.push('            overlay.parentNode.removeChild(overlay);');
-        lines.push('        });');
+        lines.push('        footer.className = "gcb-df-footer";');
+        lines.push('        footer.id = "gcb-df-footer";');
+        lines.push('        var hint = document.createElement("div");');
+        lines.push('        hint.className = "gcb-df-footer-hint";');
+        lines.push('        hint.innerHTML = SVG_SHIELD + " All required fields must be completed to submit";');
+        lines.push('        footer.appendChild(hint);');
         lines.push('        var submitBtn = document.createElement("button");');
-        lines.push('        submitBtn.className = "gcb-form-btn gcb-form-btn-submit";');
-        lines.push('        submitBtn.textContent = "Submit";');
+        lines.push('        submitBtn.className = "gcb-df-submit";');
+        lines.push('        submitBtn.innerHTML = SVG_CHECK + " <span id=\\"gcb-df-submit-text\\">Save Policy Details</span><div id=\\"gcb-df-spinner\\" class=\\"gcb-df-spinner\\" style=\\"display:none\\"></div>";');
+        lines.push('        footer.appendChild(submitBtn);');
+        lines.push('        popup.appendChild(footer);');
+        lines.push('');
+        lines.push('        // ---- SUCCESS STATE ----');
+        lines.push('        var successDiv = document.createElement("div");');
+        lines.push('        successDiv.className = "gcb-df-success";');
+        lines.push('        successDiv.id = "gcb-df-success";');
+        lines.push('        successDiv.innerHTML = \'<div class="gcb-df-success-circle">\' + SVG_CHECK + \'</div><h3>Policy Saved!</h3><p>Contact has been updated and tagged.</p>\';');
+        lines.push('        popup.appendChild(successDiv);');
+        lines.push('');
+        lines.push('        overlay.appendChild(popup);');
+        lines.push('');
+        lines.push('        // ---- PROGRESS UPDATE ----');
+        lines.push('        function updateProgress() {');
+        lines.push('            var filled = 0;');
+        lines.push('            for (var p = 0; p < allInputs.length; p++) {');
+        lines.push('                if (allInputs[p].value && allInputs[p].value.trim() !== "") filled++;');
+        lines.push('            }');
+        lines.push('            var pct = Math.round((filled / allInputs.length) * 100);');
+        lines.push('            progressFill.style.width = pct + "%";');
+        lines.push('        }');
+        lines.push('');
+        lines.push('        // ---- MANDATORY: block overlay click, shake instead ----');
+        lines.push('        overlay.addEventListener("click", function(e) {');
+        lines.push('            if (e.target === overlay) {');
+        lines.push('                e.preventDefault();');
+        lines.push('                e.stopPropagation();');
+        lines.push('                popup.style.animation = "none";');
+        lines.push('                popup.offsetHeight;');
+        lines.push('                popup.style.animation = "gcb-df-shake 0.4s ease";');
+        lines.push('            }');
+        lines.push('        });');
+        lines.push('');
+        lines.push('        // ---- MANDATORY: block Escape key ----');
+        lines.push('        function blockEsc(e) {');
+        lines.push('            if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); }');
+        lines.push('        }');
+        lines.push('        document.addEventListener("keydown", blockEsc, true);');
+        lines.push('');
+        lines.push('        // ---- SUBMIT ----');
         lines.push('        submitBtn.addEventListener("click", function() {');
         lines.push('            if (submitBtn.disabled) return;');
+        lines.push('');
+        lines.push('            // Validate — require at least one field filled');
         lines.push('            var customFieldsById = [];');
+        lines.push('            var hasAnyValue = false;');
         lines.push('            for (var v = 0; v < fields.length; v++) {');
         lines.push('                var f = fields[v];');
         lines.push('                var inp = popup.querySelector(\'[data-field-id="\' + f.id + \'"]\');');
         lines.push('                var val = inp ? inp.value : "";');
         lines.push('                if (val && val.trim() !== "") {');
         lines.push('                    customFieldsById.push({ id: f.id, field_value: val.trim() });');
+        lines.push('                    hasAnyValue = true;');
         lines.push('                }');
         lines.push('            }');
-        lines.push('            if (customFieldsById.length === 0) {');
+        lines.push('            if (!hasAnyValue) {');
         lines.push('                showNotification("Please fill in at least one field.", true);');
         lines.push('                return;');
         lines.push('            }');
+        lines.push('');
+        lines.push('            // Show spinner state');
         lines.push('            submitBtn.disabled = true;');
-        lines.push('            submitBtn.textContent = "Processing...";');
-        lines.push('            overlay.parentNode.removeChild(overlay);');
+        lines.push('            var btnText = document.getElementById("gcb-df-submit-text");');
+        lines.push('            var btnSpinner = document.getElementById("gcb-df-spinner");');
+        lines.push('            var btnSvg = submitBtn.querySelector("svg");');
+        lines.push('            if (btnSvg) btnSvg.style.display = "none";');
+        lines.push('            if (btnText) btnText.textContent = "Saving...";');
+        lines.push('            if (btnSpinner) btnSpinner.style.display = "block";');
         lines.push('');
         lines.push('            var locationId = getLocationId();');
         lines.push('            var contactId = getContactId();');
@@ -2867,40 +3095,45 @@
         lines.push('            xhr.onreadystatechange = function() {');
         lines.push('                if (xhr.readyState !== 4) return;');
         lines.push('                if (xhr.status >= 200 && xhr.status < 300) {');
-        lines.push('                    showNotification("Fields updated successfully.");');
+        lines.push('                    // Show success state');
+        lines.push('                    var bodyEl = document.getElementById("gcb-df-body");');
+        lines.push('                    var footerEl = document.getElementById("gcb-df-footer");');
+        lines.push('                    var successEl = document.getElementById("gcb-df-success");');
+        lines.push('                    if (bodyEl) bodyEl.style.display = "none";');
+        lines.push('                    if (footerEl) footerEl.style.display = "none";');
+        lines.push('                    if (progressWrap) progressWrap.style.display = "none";');
+        lines.push('                    if (successEl) successEl.style.display = "block";');
+        lines.push('');
+        lines.push('                    // Auto-close after 1.8s, then tag + complete');
+        lines.push('                    setTimeout(function() {');
+        lines.push('                        overlay.style.opacity = "0";');
+        lines.push('                        overlay.style.transition = "opacity 0.3s";');
+        lines.push('                        setTimeout(function() {');
+        lines.push('                            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);');
+        lines.push('                            document.removeEventListener("keydown", blockEsc, true);');
+        lines.push('                            if (optionTag) {');
+        lines.push('                                addTagToContact(optionTag, onComplete);');
+        lines.push('                            } else if (onComplete) {');
+        lines.push('                                onComplete();');
+        lines.push('                            }');
+        lines.push('                        }, 300);');
+        lines.push('                    }, 1800);');
         lines.push('                } else {');
-        lines.push('                    var errMsg = "Failed to update fields.";');
-        lines.push('                    try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch(e) {}');
-        lines.push('                    showNotification(errMsg, true);');
-        lines.push('                }');
-        lines.push('                if (optionTag) {');
-        lines.push('                    addTagToContact(optionTag, onComplete);');
-        lines.push('                } else if (onComplete) {');
-        lines.push('                    onComplete();');
+        lines.push('                    // Re-enable on error');
+        lines.push('                    submitBtn.disabled = false;');
+        lines.push('                    if (btnSvg) btnSvg.style.display = "";');
+        lines.push('                    if (btnText) btnText.textContent = "Save Policy Details";');
+        lines.push('                    if (btnSpinner) btnSpinner.style.display = "none";');
+        lines.push('                    var errMsg2 = "Failed to update fields.";');
+        lines.push('                    try { errMsg2 = JSON.parse(xhr.responseText).error || errMsg2; } catch(e) {}');
+        lines.push('                    showNotification(errMsg2, true);');
         lines.push('                }');
         lines.push('            };');
         lines.push('            xhr.send(JSON.stringify({ locationId: locationId, contactId: contactId, customFieldsById: customFieldsById }));');
         lines.push('        });');
-        lines.push('        footer.appendChild(cancelBtn);');
-        lines.push('        footer.appendChild(submitBtn);');
-        lines.push('        popup.appendChild(footer);');
-        lines.push('        overlay.appendChild(popup);');
-        lines.push('');
-        lines.push('        overlay.addEventListener("click", function(e) {');
-        lines.push('            if (e.target === overlay) overlay.parentNode.removeChild(overlay);');
-        lines.push('        });');
-        lines.push('');
-        lines.push('        document.addEventListener("keydown", function escHandler(e) {');
-        lines.push('            if (e.key === "Escape") {');
-        lines.push('                var el = document.getElementById("gcb-form-overlay");');
-        lines.push('                if (el) el.parentNode.removeChild(el);');
-        lines.push('                document.removeEventListener("keydown", escHandler);');
-        lines.push('            }');
-        lines.push('        });');
         lines.push('');
         lines.push('        document.body.appendChild(overlay);');
-        lines.push('        var firstInput = popup.querySelector("input, select, textarea");');
-        lines.push('        if (firstInput) setTimeout(function() { firstInput.focus(); }, 50);');
+        lines.push('        if (allInputs.length > 0) setTimeout(function() { allInputs[0].focus(); }, 50);');
         lines.push('    }');
         lines.push('');
 
@@ -3084,7 +3317,7 @@
         lines.push('                            item.addEventListener("click", function() {');
         lines.push('                                closeAllDropdowns();');
         lines.push('                                if (opt.dynamicForm) {');
-        lines.push('                                    fetchAndShowDynamicForm(opt.value);');
+        lines.push('                                    fetchAndShowDynamicForm(opt.value, opt.name);');
         lines.push('                                } else if (opt.form && opt.form.fields && opt.form.fields.length > 0) {');
         lines.push('                                    if (opt.type === "link") {');
         lines.push('                                        showFormPopup(opt.form, function() { window.open(opt.value, "_blank"); });');
@@ -3132,7 +3365,7 @@
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
         lines.push('                        if (b.dynamicForm) {');
-        lines.push('                            fetchAndShowDynamicForm(b.value);');
+        lines.push('                            fetchAndShowDynamicForm(b.value, b.name);');
         lines.push('                        } else if (b.form && b.form.fields && b.form.fields.length > 0) {');
         lines.push('                            showFormPopup(b.form, null, b.value);');
         lines.push('                        } else {');
