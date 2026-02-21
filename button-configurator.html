@@ -790,6 +790,11 @@
                 <label id="new-opt-value-label">Tag Name</label>
                 <input type="text" id="new-opt-value" placeholder="e.g. cancelled">
             </div>
+            <div class="field-group" id="new-opt-dynamic-group" style="display:none;">
+                <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;">
+                    <input type="checkbox" id="new-opt-dynamic" style="width:auto;"> Dynamic Form <span style="font-weight:400;color:#999;">(auto-fetch from Policy Info folder)</span>
+                </label>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn-secondary" onclick="closeModal('modal-add-option')">Cancel</button>
@@ -1104,6 +1109,7 @@
         document.getElementById('new-opt-name').value = '';
         document.getElementById('new-opt-type').value = 'tag';
         document.getElementById('new-opt-value').value = '';
+        document.getElementById('new-opt-dynamic').checked = false;
         onOptTypeChange();
         openModal('modal-add-option');
     }
@@ -1112,12 +1118,15 @@
         var type = document.getElementById('new-opt-type').value;
         var label = document.getElementById('new-opt-value-label');
         var input = document.getElementById('new-opt-value');
+        var dynamicGroup = document.getElementById('new-opt-dynamic-group');
         if (type === 'link') {
             label.textContent = 'URL';
             input.placeholder = 'https://example.com';
+            dynamicGroup.style.display = 'none';
         } else {
             label.textContent = 'Tag Name';
             input.placeholder = 'e.g. cancelled';
+            dynamicGroup.style.display = 'block';
         }
     }
 
@@ -1130,12 +1139,16 @@
 
         var btn = findButton(currentDropdownId);
         if (!btn) return;
-        btn.options.push({
+        var optObj = {
             id: generateId('opt'),
             name: name,
             type: type,
             value: value
-        });
+        };
+        if (type === 'tag' && document.getElementById('new-opt-dynamic').checked) {
+            optObj.dynamicForm = true;
+        }
+        btn.options.push(optObj);
         persistDrafts();
         closeModal('modal-add-option');
         renderButtonsList();
@@ -1434,6 +1447,38 @@
         renderButtonsList();
     }
 
+    function toggleDynamicForm(btnId) {
+        var btn = findButton(btnId);
+        if (!btn) return;
+        if (btn.dynamicForm) {
+            delete btn.dynamicForm;
+        } else {
+            btn.dynamicForm = true;
+            delete btn.form;
+        }
+        persistDrafts();
+        renderButtonsList();
+    }
+
+    function toggleOptionDynamicForm(btnId, optId) {
+        var btn = findButton(btnId);
+        if (!btn || !btn.options) return;
+        for (var i = 0; i < btn.options.length; i++) {
+            if (btn.options[i].id === optId) {
+                var opt = btn.options[i];
+                if (opt.dynamicForm) {
+                    delete opt.dynamicForm;
+                } else {
+                    opt.dynamicForm = true;
+                    delete opt.form;
+                }
+                break;
+            }
+        }
+        persistDrafts();
+        renderButtonsList();
+    }
+
     function toggleCardBody(btnId) {
         var body = document.getElementById('card-body-' + btnId);
         if (body) {
@@ -1503,7 +1548,9 @@
             if (btn.type === 'dropdown') {
                 html += '<span class="meta">' + (btn.options ? btn.options.length : 0) + ' options</span>';
             }
-            if (btn.form && btn.form.fields && btn.form.fields.length > 0) {
+            if (btn.dynamicForm) {
+                html += '<span class="form-indicator" style="color:#7c3aed;">&#9889; Dynamic Form</span>';
+            } else if (btn.form && btn.form.fields && btn.form.fields.length > 0) {
                 html += '<span class="form-indicator">&#128203; Form (' + btn.form.fields.length + ')</span>';
             }
             html += '</div>';
@@ -1531,13 +1578,20 @@
                         var optBadge = opt.type === 'link' ? 'badge-link' : 'badge-tag';
                         html += '<div class="option-card">';
                         html += '<div class="opt-badge"><span class="badge ' + optBadge + '">' + opt.type.toUpperCase() + '</span>';
-                        if (opt.form && opt.form.fields && opt.form.fields.length > 0) {
+                        if (opt.dynamicForm) {
+                            html += ' <span class="form-indicator" style="color:#7c3aed;">&#9889; Dynamic</span>';
+                        } else if (opt.form && opt.form.fields && opt.form.fields.length > 0) {
                             html += ' <span class="form-indicator">&#128203; Form (' + opt.form.fields.length + ')</span>';
                         }
                         html += '</div>';
                         html += '<div class="opt-name">' + escapeHtml(opt.name) + '</div>';
                         html += '<div class="opt-value">' + escapeHtml(opt.value) + '</div>';
-                        html += '<button onclick="event.stopPropagation();openManageFormModal(\'' + btn.id + '\',\'' + opt.id + '\')" title="Popup Form" style="position:absolute;top:8px;right:32px;background:none;border:none;font-size:16px;cursor:pointer;color:#7c3aed;padding:2px 6px;border-radius:4px;">&#128203;</button>';
+                        if (opt.type === 'tag') {
+                            html += '<label onclick="event.stopPropagation();" style="position:absolute;bottom:8px;left:12px;display:flex;align-items:center;gap:4px;font-size:11px;color:#666;cursor:pointer;"><input type="checkbox" style="width:auto;" ' + (opt.dynamicForm ? 'checked' : '') + ' onchange="toggleOptionDynamicForm(\'' + btn.id + '\',\'' + opt.id + '\')"> Dynamic Form</label>';
+                        }
+                        if (!opt.dynamicForm) {
+                            html += '<button onclick="event.stopPropagation();openManageFormModal(\'' + btn.id + '\',\'' + opt.id + '\')" title="Popup Form" style="position:absolute;top:8px;right:32px;background:none;border:none;font-size:16px;cursor:pointer;color:#7c3aed;padding:2px 6px;border-radius:4px;">&#128203;</button>';
+                        }
                         html += '<button class="opt-delete" onclick="deleteOption(\'' + btn.id + '\',\'' + opt.id + '\')">&times;</button>';
                         html += '</div>';
                     }
@@ -1561,7 +1615,12 @@
             } else {
                 html += '<div class="field-group"><label>Tag Name</label>';
                 html += '<input type="text" value="' + escapeHtml(btn.value || '') + '" onchange="updateButtonValue(\'' + btn.id + '\', this.value)"></div>';
-                html += '<div style="margin-top:14px;"><button class="btn-outline" onclick="openManageFormModal(\'' + btn.id + '\')">&#128203; ' + (btn.form ? 'Edit' : 'Add') + ' Popup Form</button></div>';
+                html += '<div style="margin-top:14px;">';
+                html += '<label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:10px;cursor:pointer;"><input type="checkbox" style="width:auto;" ' + (btn.dynamicForm ? 'checked' : '') + ' onchange="toggleDynamicForm(\'' + btn.id + '\')"> Dynamic Form <span style="color:#999;font-weight:400;">(auto-fetch from Policy Info folder)</span></label>';
+                if (!btn.dynamicForm) {
+                    html += '<button class="btn-outline" onclick="openManageFormModal(\'' + btn.id + '\')">&#128203; ' + (btn.form ? 'Edit' : 'Add') + ' Popup Form</button>';
+                }
+                html += '</div>';
             }
             html += '</div>';
             html += '</div>';
@@ -1913,6 +1972,7 @@
                             type: opt.type,
                             value: opt.value
                         };
+                        if (opt.dynamicForm) optEntry.dynamicForm = true;
                         if (opt.form) optEntry.form = JSON.parse(JSON.stringify(opt.form));
                         entry.options.push(optEntry);
                     }
@@ -1924,6 +1984,7 @@
             } else {
                 entry.value = btn.value;
             }
+            if (btn.dynamicForm) entry.dynamicForm = true;
             if (btn.form) entry.form = JSON.parse(JSON.stringify(btn.form));
             config.push(entry);
         }
@@ -2650,6 +2711,199 @@
         lines.push('    }');
         lines.push('');
 
+        // ---- DYNAMIC FORM: FETCH AND SHOW ----
+        lines.push('    // ---- DYNAMIC FORM ----');
+        lines.push('    function fetchAndShowDynamicForm(optionTag, onComplete) {');
+        lines.push('        var locationId = getLocationId();');
+        lines.push('        var contactId = getContactId();');
+        lines.push('        if (!locationId || !contactId) {');
+        lines.push('            showNotification("Could not determine contact or location ID.", true);');
+        lines.push('            return;');
+        lines.push('        }');
+        lines.push('        showNotification("Loading form fields...");');
+        lines.push('        var xhr = new XMLHttpRequest();');
+        lines.push('        xhr.open("POST", BACKEND_URL + "/get-form-fields?apikey=" + SUPABASE_KEY, true);');
+        lines.push('        xhr.setRequestHeader("Content-Type", "application/json");');
+        lines.push('        xhr.setRequestHeader("X-Api-Key", API_SECRET);');
+        lines.push('        xhr.onreadystatechange = function() {');
+        lines.push('            if (xhr.readyState !== 4) return;');
+        lines.push('            if (xhr.status >= 200 && xhr.status < 300) {');
+        lines.push('                try {');
+        lines.push('                    var result = JSON.parse(xhr.responseText);');
+        lines.push('                    if (result.fields && result.fields.length > 0) {');
+        lines.push('                        showDynamicFormPopup(result.fields, optionTag, onComplete);');
+        lines.push('                    } else {');
+        lines.push('                        showNotification("No form fields found in Policy Info folder.", true);');
+        lines.push('                        if (optionTag) addTagToContact(optionTag, onComplete);');
+        lines.push('                    }');
+        lines.push('                } catch(e) {');
+        lines.push('                    showNotification("Error parsing form fields response.", true);');
+        lines.push('                }');
+        lines.push('            } else {');
+        lines.push('                var errMsg = "Failed to load form fields.";');
+        lines.push('                try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch(e) {}');
+        lines.push('                showNotification(errMsg, true);');
+        lines.push('            }');
+        lines.push('        };');
+        lines.push('        xhr.send(JSON.stringify({ locationId: locationId }));');
+        lines.push('    }');
+        lines.push('');
+        lines.push('    function showDynamicFormPopup(fields, optionTag, onComplete) {');
+        lines.push('        var existing = document.getElementById("gcb-form-overlay");');
+        lines.push('        if (existing) existing.parentNode.removeChild(existing);');
+        lines.push('');
+        lines.push('        var overlay = document.createElement("div");');
+        lines.push('        overlay.id = "gcb-form-overlay";');
+        lines.push('        overlay.className = "gcb-form-overlay";');
+        lines.push('');
+        lines.push('        var popup = document.createElement("div");');
+        lines.push('        popup.className = "gcb-form-popup";');
+        lines.push('');
+        lines.push('        var header = document.createElement("div");');
+        lines.push('        header.className = "gcb-form-header";');
+        lines.push('        var title = document.createElement("h3");');
+        lines.push('        title.textContent = "Policy Info";');
+        lines.push('        var closeBtn = document.createElement("button");');
+        lines.push('        closeBtn.className = "gcb-form-close";');
+        lines.push('        closeBtn.innerHTML = "&times;";');
+        lines.push('        closeBtn.addEventListener("click", function() {');
+        lines.push('            overlay.parentNode.removeChild(overlay);');
+        lines.push('        });');
+        lines.push('        header.appendChild(title);');
+        lines.push('        header.appendChild(closeBtn);');
+        lines.push('        popup.appendChild(header);');
+        lines.push('');
+        lines.push('        var body = document.createElement("div");');
+        lines.push('        body.className = "gcb-form-body";');
+        lines.push('');
+        lines.push('        for (var i = 0; i < fields.length; i++) {');
+        lines.push('            (function(field) {');
+        lines.push('                var group = document.createElement("div");');
+        lines.push('                group.className = "gcb-form-group";');
+        lines.push('                var label = document.createElement("label");');
+        lines.push('                label.className = "gcb-form-label";');
+        lines.push('                label.textContent = field.name;');
+        lines.push('                group.appendChild(label);');
+        lines.push('');
+        lines.push('                var input;');
+        lines.push('                if (field.dataType === "select" && field.options && field.options.length > 0) {');
+        lines.push('                    input = document.createElement("select");');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    var emptyOpt = document.createElement("option");');
+        lines.push('                    emptyOpt.value = "";');
+        lines.push('                    emptyOpt.textContent = "Select...";');
+        lines.push('                    input.appendChild(emptyOpt);');
+        lines.push('                    for (var o = 0; o < field.options.length; o++) {');
+        lines.push('                        var optEl = document.createElement("option");');
+        lines.push('                        var optVal = typeof field.options[o] === "object" ? field.options[o].value : field.options[o];');
+        lines.push('                        var optLabel = typeof field.options[o] === "object" ? field.options[o].name : field.options[o];');
+        lines.push('                        optEl.value = optVal;');
+        lines.push('                        optEl.textContent = optLabel;');
+        lines.push('                        input.appendChild(optEl);');
+        lines.push('                    }');
+        lines.push('                } else if (field.dataType === "textarea") {');
+        lines.push('                    input = document.createElement("textarea");');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    input.rows = 3;');
+        lines.push('                    if (field.placeholder) input.placeholder = field.placeholder;');
+        lines.push('                } else if (field.dataType === "date") {');
+        lines.push('                    input = document.createElement("input");');
+        lines.push('                    input.type = "date";');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                } else {');
+        lines.push('                    input = document.createElement("input");');
+        lines.push('                    input.type = "text";');
+        lines.push('                    input.className = "gcb-form-input";');
+        lines.push('                    if (field.placeholder) input.placeholder = field.placeholder;');
+        lines.push('                }');
+        lines.push('                input.setAttribute("data-field-id", field.id);');
+        lines.push('                group.appendChild(input);');
+        lines.push('');
+        lines.push('                var errMsg = document.createElement("div");');
+        lines.push('                errMsg.className = "gcb-form-error";');
+        lines.push('                errMsg.setAttribute("data-err-for", field.id);');
+        lines.push('                group.appendChild(errMsg);');
+        lines.push('                body.appendChild(group);');
+        lines.push('            })(fields[i]);');
+        lines.push('        }');
+        lines.push('        popup.appendChild(body);');
+        lines.push('');
+        lines.push('        var footer = document.createElement("div");');
+        lines.push('        footer.className = "gcb-form-footer";');
+        lines.push('        var cancelBtn = document.createElement("button");');
+        lines.push('        cancelBtn.className = "gcb-form-btn gcb-form-btn-cancel";');
+        lines.push('        cancelBtn.textContent = "Cancel";');
+        lines.push('        cancelBtn.addEventListener("click", function() {');
+        lines.push('            overlay.parentNode.removeChild(overlay);');
+        lines.push('        });');
+        lines.push('        var submitBtn = document.createElement("button");');
+        lines.push('        submitBtn.className = "gcb-form-btn gcb-form-btn-submit";');
+        lines.push('        submitBtn.textContent = "Submit";');
+        lines.push('        submitBtn.addEventListener("click", function() {');
+        lines.push('            if (submitBtn.disabled) return;');
+        lines.push('            var customFieldsById = [];');
+        lines.push('            for (var v = 0; v < fields.length; v++) {');
+        lines.push('                var f = fields[v];');
+        lines.push('                var inp = popup.querySelector(\'[data-field-id="\' + f.id + \'"]\');');
+        lines.push('                var val = inp ? inp.value : "";');
+        lines.push('                if (val && val.trim() !== "") {');
+        lines.push('                    customFieldsById.push({ id: f.id, field_value: val.trim() });');
+        lines.push('                }');
+        lines.push('            }');
+        lines.push('            if (customFieldsById.length === 0) {');
+        lines.push('                showNotification("Please fill in at least one field.", true);');
+        lines.push('                return;');
+        lines.push('            }');
+        lines.push('            submitBtn.disabled = true;');
+        lines.push('            submitBtn.textContent = "Processing...";');
+        lines.push('            overlay.parentNode.removeChild(overlay);');
+        lines.push('');
+        lines.push('            var locationId = getLocationId();');
+        lines.push('            var contactId = getContactId();');
+        lines.push('            var xhr = new XMLHttpRequest();');
+        lines.push('            xhr.open("POST", BACKEND_URL + "/update-contact-by-id?apikey=" + SUPABASE_KEY, true);');
+        lines.push('            xhr.setRequestHeader("Content-Type", "application/json");');
+        lines.push('            xhr.setRequestHeader("X-Api-Key", API_SECRET);');
+        lines.push('            xhr.onreadystatechange = function() {');
+        lines.push('                if (xhr.readyState !== 4) return;');
+        lines.push('                if (xhr.status >= 200 && xhr.status < 300) {');
+        lines.push('                    showNotification("Fields updated successfully.");');
+        lines.push('                } else {');
+        lines.push('                    var errMsg = "Failed to update fields.";');
+        lines.push('                    try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch(e) {}');
+        lines.push('                    showNotification(errMsg, true);');
+        lines.push('                }');
+        lines.push('                if (optionTag) {');
+        lines.push('                    addTagToContact(optionTag, onComplete);');
+        lines.push('                } else if (onComplete) {');
+        lines.push('                    onComplete();');
+        lines.push('                }');
+        lines.push('            };');
+        lines.push('            xhr.send(JSON.stringify({ locationId: locationId, contactId: contactId, customFieldsById: customFieldsById }));');
+        lines.push('        });');
+        lines.push('        footer.appendChild(cancelBtn);');
+        lines.push('        footer.appendChild(submitBtn);');
+        lines.push('        popup.appendChild(footer);');
+        lines.push('        overlay.appendChild(popup);');
+        lines.push('');
+        lines.push('        overlay.addEventListener("click", function(e) {');
+        lines.push('            if (e.target === overlay) overlay.parentNode.removeChild(overlay);');
+        lines.push('        });');
+        lines.push('');
+        lines.push('        document.addEventListener("keydown", function escHandler(e) {');
+        lines.push('            if (e.key === "Escape") {');
+        lines.push('                var el = document.getElementById("gcb-form-overlay");');
+        lines.push('                if (el) el.parentNode.removeChild(el);');
+        lines.push('                document.removeEventListener("keydown", escHandler);');
+        lines.push('            }');
+        lines.push('        });');
+        lines.push('');
+        lines.push('        document.body.appendChild(overlay);');
+        lines.push('        var firstInput = popup.querySelector("input, select, textarea");');
+        lines.push('        if (firstInput) setTimeout(function() { firstInput.focus(); }, 50);');
+        lines.push('    }');
+        lines.push('');
+
         lines.push('    // ---- CLOSE ALL DROPDOWNS ----');
         lines.push('    function closeAllDropdowns() {');
         lines.push('        var menus = document.querySelectorAll(".gcb-dropdown");');
@@ -2829,7 +3083,9 @@
         lines.push('                            item.appendChild(document.createTextNode(opt.name));');
         lines.push('                            item.addEventListener("click", function() {');
         lines.push('                                closeAllDropdowns();');
-        lines.push('                                if (opt.form && opt.form.fields && opt.form.fields.length > 0) {');
+        lines.push('                                if (opt.dynamicForm) {');
+        lines.push('                                    fetchAndShowDynamicForm(opt.value);');
+        lines.push('                                } else if (opt.form && opt.form.fields && opt.form.fields.length > 0) {');
         lines.push('                                    if (opt.type === "link") {');
         lines.push('                                        showFormPopup(opt.form, function() { window.open(opt.value, "_blank"); });');
         lines.push('                                    } else {');
@@ -2875,7 +3131,9 @@
         lines.push('                    button.appendChild(makeIcon("gcb-icon-tag", SVG_TAG));');
         lines.push('                    button.appendChild(document.createTextNode(b.name));');
         lines.push('                    button.addEventListener("click", function() {');
-        lines.push('                        if (b.form && b.form.fields && b.form.fields.length > 0) {');
+        lines.push('                        if (b.dynamicForm) {');
+        lines.push('                            fetchAndShowDynamicForm(b.value);');
+        lines.push('                        } else if (b.form && b.form.fields && b.form.fields.length > 0) {');
         lines.push('                            showFormPopup(b.form, null, b.value);');
         lines.push('                        } else {');
         lines.push('                            addTagToContact(b.value);');
