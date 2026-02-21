@@ -52,9 +52,9 @@ async function getLocationToken(
 async function getCustomFieldMap(
   locationId: string,
   token: string
-): Promise<Map<string, string>> {
+): Promise<{ fieldMap: Map<string, string>; availableNames: string[] }> {
   const res = await fetch(
-    `${GHL_API}/locations/${locationId}/customFields`,
+    `${GHL_API}/locations/${locationId}/customFields?model=contact`,
     {
       method: "GET",
       headers: {
@@ -71,11 +71,15 @@ async function getCustomFieldMap(
 
   const data = await res.json();
   const fieldMap = new Map<string, string>();
+  const availableNames: string[] = [];
   for (const field of data.customFields || []) {
     fieldMap.set(field.name.toLowerCase(), field.id);
+    availableNames.push(field.name);
   }
-  console.log(`[update-contact] Found ${fieldMap.size} custom fields for location ${locationId}`);
-  return fieldMap;
+  console.log(
+    `[update-contact] Found ${fieldMap.size} custom fields for location ${locationId}: ${availableNames.join(", ")}`
+  );
+  return { fieldMap, availableNames };
 }
 
 async function updateContactCustomFields(
@@ -154,7 +158,7 @@ Deno.serve(async (req: Request) => {
     // Resolve field names to IDs and update contact
     // Wrapped in a function so we can retry on 401
     async function resolveAndUpdate(locationToken: string) {
-      const fieldMap = await getCustomFieldMap(locationId, locationToken);
+      const { fieldMap, availableNames } = await getCustomFieldMap(locationId, locationToken);
 
       const resolved: Array<{ id: string; field_value: string }> = [];
       const updated: Record<string, string> = {};
@@ -175,13 +179,14 @@ Deno.serve(async (req: Request) => {
           JSON.stringify({
             error: "No matching custom fields found",
             notFound: warnings,
+            availableFields: availableNames,
           }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       const ghlRes = await updateContactCustomFields(contactId, resolved, locationToken);
-      return { ghlRes, updated, warnings };
+      return { ghlRes, updated, warnings, availableNames };
     }
 
     let result = await resolveAndUpdate(token);
@@ -197,20 +202,27 @@ Deno.serve(async (req: Request) => {
       if (result instanceof Response) return result;
     }
 
+    const ghlBody = await result.ghlRes.text();
+    console.log(`[update-contact] GHL response (${result.ghlRes.status}):`, ghlBody);
+
     if (!result.ghlRes.ok) {
-      const text = await result.ghlRes.text();
-      console.error(`[update-contact] GHL API error (${result.ghlRes.status}):`, text);
-      throw new Error(`GHL API error (${result.ghlRes.status}): ${text}`);
+      console.error(`[update-contact] GHL API error (${result.ghlRes.status}):`, ghlBody);
+      throw new Error(`GHL API error (${result.ghlRes.status}): ${ghlBody}`);
     }
 
     console.log(`[update-contact] Fields updated: ${Object.keys(result.updated).join(", ")}`);
 
+    let ghlParsed;
+    try { ghlParsed = JSON.parse(ghlBody); } catch { ghlParsed = ghlBody; }
+
     const response: Record<string, unknown> = {
       success: true,
       updated: result.updated,
+      ghlResponse: ghlParsed,
     };
     if (result.warnings.length > 0) {
       response.warnings = result.warnings;
+      response.availableFields = result.availableNames;
     }
 
     return new Response(

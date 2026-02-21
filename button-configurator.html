@@ -655,7 +655,11 @@
             <label>API Secret <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(authenticates button clicks to your backend)</span></label>
             <input type="password" id="api-secret" value="" placeholder="your-api-secret" style="font-family:'Courier New',monospace;font-size:13px;">
         </div>
-        <p style="font-size:12px;color:#999;margin-top:8px;">Tag buttons call your Supabase Edge Function backend (via OAuth), not GHL directly. Enter the base URL + API secret here.</p>
+        <div class="field-group" style="margin-top:8px;">
+            <label>Supabase Anon Key <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#999;">(Dashboard &rarr; Settings &rarr; API &rarr; anon/public key)</span></label>
+            <input type="text" id="supabase-anon-key" value="" placeholder="eyJhbGciOiJIUzI1NiIs..." style="font-family:'Courier New',monospace;font-size:13px;">
+        </div>
+        <p style="font-size:12px;color:#999;margin-top:8px;">Tag buttons call your Supabase Edge Function backend (via OAuth), not GHL directly. Enter the base URL, API secret, and Supabase anon key here.</p>
     </div>
     <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <div class="field-group" style="margin-top:0;">
@@ -2029,8 +2033,9 @@
 
         var backendUrl = document.getElementById('backend-url').value.trim().replace(/\/+$/, '');
         var apiSecret = document.getElementById('api-secret').value.trim();
-        if (!backendUrl || !apiSecret) {
-            showNotification('Please enter your Backend URL and API Secret for tag API calls.');
+        var supabaseAnonKey = document.getElementById('supabase-anon-key').value.trim();
+        if (!backendUrl || !apiSecret || !supabaseAnonKey) {
+            showNotification('Please enter your Backend URL, API Secret, and Supabase Anon Key.');
             return;
         }
 
@@ -2038,19 +2043,20 @@
         var configJSON = JSON.stringify(config, null, 4);
 
         // Generate the static script (same every time for the same URL)
-        var code = buildInjectionCode(configUrl, backendUrl, apiSecret);
+        var code = buildInjectionCode(configUrl, backendUrl, apiSecret, supabaseAnonKey);
         document.getElementById('code-output-script').value = code;
         document.getElementById('code-output-json').value = configJSON;
         switchTab('code');
         showNotification('Code generated! Copy the script AND the JSON config.');
     }
 
-    function buildInjectionCode(configUrl, backendUrl, apiSecret) {
+    function buildInjectionCode(configUrl, backendUrl, apiSecret, supabaseAnonKey) {
         // The entire injection script is built as a string.
         // We use ES5-compatible syntax throughout (no arrow functions, no template literals).
         var escapedUrl = configUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         var escapedBackendUrl = backendUrl.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         var escapedApiSecret = apiSecret.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        var escapedAnonKey = supabaseAnonKey.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
         var lines = [];
         lines.push('<script>');
         lines.push('/* ======================================================================');
@@ -2068,6 +2074,7 @@
         lines.push('    var CONFIG_URL = "' + escapedUrl + '";');
         lines.push('    var BACKEND_URL = "' + escapedBackendUrl + '";');
         lines.push('    var API_SECRET = "' + escapedApiSecret + '";');
+        lines.push('    var SUPABASE_KEY = "' + escapedAnonKey + '";');
         lines.push('');
         lines.push('    // Agency-wide mode: if CONFIG_URL ends with "/" auto-append locationId.json');
         lines.push('    function getLocationId() {');
@@ -2304,7 +2311,7 @@
         lines.push('            return;');
         lines.push('        }');
         lines.push('        var xhr = new XMLHttpRequest();');
-        lines.push('        xhr.open("POST", BACKEND_URL + "/add-tag", true);');
+        lines.push('        xhr.open("POST", BACKEND_URL + "/add-tag?apikey=" + SUPABASE_KEY, true);');
         lines.push('        xhr.setRequestHeader("Content-Type", "application/json");');
         lines.push('        xhr.setRequestHeader("X-Api-Key", API_SECRET);');
         lines.push('        xhr.onreadystatechange = function() {');
@@ -2344,7 +2351,7 @@
         lines.push('        var cf = {};');
         lines.push('        cf[fieldName] = value;');
         lines.push('        var xhr = new XMLHttpRequest();');
-        lines.push('        xhr.open("POST", BACKEND_URL + "/update-contact", true);');
+        lines.push('        xhr.open("POST", BACKEND_URL + "/update-contact?apikey=" + SUPABASE_KEY, true);');
         lines.push('        xhr.setRequestHeader("Content-Type", "application/json");');
         lines.push('        xhr.setRequestHeader("X-Api-Key", API_SECRET);');
         lines.push('        xhr.onreadystatechange = function() {');
@@ -2356,7 +2363,9 @@
         lines.push('                        showNotification(fieldName + " updated to: " + value);');
         lines.push('                    }');
         lines.push('                    if (result.warnings && result.warnings.length > 0) {');
-        lines.push('                        showNotification("Warning: field(s) not found: " + result.warnings.join(", "), true);');
+        lines.push('                        var warnMsg = "Field(s) not found: " + result.warnings.join(", ");');
+        lines.push('                        if (result.availableFields) warnMsg += ". Available: " + result.availableFields.join(", ");');
+        lines.push('                        showNotification(warnMsg, true);');
         lines.push('                    }');
         lines.push('                } catch(e) {');
         lines.push('                    showNotification(fieldName + ": " + value);');
@@ -2364,7 +2373,11 @@
         lines.push('            } else {');
         lines.push('                console.log("[GHL Buttons] Backend error. Status: " + xhr.status + " Response: " + xhr.responseText);');
         lines.push('                var errMsg = "Failed to update field.";');
-        lines.push('                try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch(e) {}');
+        lines.push('                try {');
+        lines.push('                    var errData = JSON.parse(xhr.responseText);');
+        lines.push('                    errMsg = errData.error || errMsg;');
+        lines.push('                    if (errData.availableFields) errMsg += " Available: " + errData.availableFields.join(", ");');
+        lines.push('                } catch(e) {}');
         lines.push('                showNotification(errMsg + " (Status: " + xhr.status + ")", true);');
         lines.push('            }');
         lines.push('            if (onComplete) onComplete();');
@@ -2454,16 +2467,28 @@
         lines.push('                return;');
         lines.push('            }');
         lines.push('            var xhr = new XMLHttpRequest();');
-        lines.push('            xhr.open("POST", BACKEND_URL + "/update-contact", true);');
+        lines.push('            xhr.open("POST", BACKEND_URL + "/update-contact?apikey=" + SUPABASE_KEY, true);');
         lines.push('            xhr.setRequestHeader("Content-Type", "application/json");');
         lines.push('            xhr.setRequestHeader("X-Api-Key", API_SECRET);');
         lines.push('            xhr.onreadystatechange = function() {');
         lines.push('                if (xhr.readyState !== 4) return;');
         lines.push('                if (xhr.status >= 200 && xhr.status < 300) {');
-        lines.push('                    showNotification("Custom fields updated.");');
+        lines.push('                    try {');
+        lines.push('                        var cfResult = JSON.parse(xhr.responseText);');
+        lines.push('                        showNotification("Custom fields updated.");');
+        lines.push('                        if (cfResult.warnings && cfResult.warnings.length > 0) {');
+        lines.push('                            var warnMsg = "Field(s) not found: " + cfResult.warnings.join(", ");');
+        lines.push('                            if (cfResult.availableFields) warnMsg += ". Available: " + cfResult.availableFields.join(", ");');
+        lines.push('                            showNotification(warnMsg, true);');
+        lines.push('                        }');
+        lines.push('                    } catch(e) { showNotification("Custom fields updated."); }');
         lines.push('                } else {');
         lines.push('                    var errMsg = "Failed to update custom fields.";');
-        lines.push('                    try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch(e) {}');
+        lines.push('                    try {');
+        lines.push('                        var errData = JSON.parse(xhr.responseText);');
+        lines.push('                        errMsg = errData.error || errMsg;');
+        lines.push('                        if (errData.availableFields) errMsg += " Available: " + errData.availableFields.join(", ");');
+        lines.push('                    } catch(e) {}');
         lines.push('                    showNotification(errMsg, true);');
         lines.push('                }');
         lines.push('                processNextTag(0);');
