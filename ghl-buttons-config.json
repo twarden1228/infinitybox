@@ -43,7 +43,44 @@
                 "name": "Approved/Sold",
                 "type": "tag",
                 "value": "approved",
-                "dynamicForm": true
+                "form": {
+                    "title": "Enter Policy Details",
+                    "fields": [
+                        {
+                            "id": "fld_1771102887409_3",
+                            "label": "Policy Info",
+                            "type": "text",
+                            "required": true,
+                            "placeholder": "Client Name",
+                            "destination": {
+                                "type": "customField",
+                                "fieldName": "Client Name"
+                            }
+                        },
+                        {
+                            "id": "fld_1771102899797_4",
+                            "label": "Carrier",
+                            "type": "text",
+                            "required": true,
+                            "placeholder": "Carrier",
+                            "destination": {
+                                "type": "customField",
+                                "fieldName": "Carrier"
+                            }
+                        },
+                        {
+                            "id": "fld_1771102914350_5",
+                            "label": "Premium",
+                            "type": "text",
+                            "required": true,
+                            "placeholder": "Monthly Premium",
+                            "destination": {
+                                "type": "customField",
+                                "fieldName": "Monthly Premium"
+                            }
+                        }
+                    ]
+                }
             }
         ]
     },
