@@ -3320,15 +3320,26 @@
     var GITHUB_FILE_PATH = "ghl-buttons-config.json";
     var GITHUB_TOKEN_KEY = "ghl_github_token";
 
-    // Load saved tokens on page load
+    // Load and auto-save all admin settings
     (function() {
-        var saved = localStorage.getItem(GITHUB_TOKEN_KEY);
-        if (saved) {
-            document.getElementById('github-token').value = saved;
+        var fields = [
+            { id: 'config-url',        key: 'ghl_config_url' },
+            { id: 'backend-url',       key: 'ghl_backend_url' },
+            { id: 'api-secret',        key: 'ghl_api_secret' },
+            { id: 'supabase-anon-key', key: 'ghl_supabase_anon_key' },
+            { id: 'github-token',      key: GITHUB_TOKEN_KEY }
+        ];
+        for (var i = 0; i < fields.length; i++) {
+            (function(f) {
+                var el = document.getElementById(f.id);
+                if (!el) return;
+                var saved = localStorage.getItem(f.key);
+                if (saved) el.value = saved;
+                el.addEventListener('input', function() {
+                    localStorage.setItem(f.key, this.value.trim());
+                });
+            })(fields[i]);
         }
-        document.getElementById('github-token').addEventListener('input', function() {
-            localStorage.setItem(GITHUB_TOKEN_KEY, this.value.trim());
-        });
     })();
 
     function saveToGitHub() {
