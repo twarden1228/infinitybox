@@ -1,15 +1,16 @@
 /*
- * GoHighLevel Glassmorphism Theme
- * ================================
+ * GoHighLevel Glassmorphism Theme v2
+ * ====================================
  * A modern glassmorphism UI overhaul for GoHighLevel CRM.
- * Paste this CSS into your GHL Custom CSS field.
+ * Paste this entire CSS into your GHL Custom CSS field.
  *
- * Features:
- *   - Frosted glass panels and cards
- *   - Gradient accents and soft glows
- *   - Refined typography and spacing
- *   - Smooth transitions on all interactive elements
- *   - Custom scrollbars
+ * HOW IT WORKS:
+ *   1. Kills ALL white/light backgrounds across the entire app
+ *   2. Applies a dark gradient to the body
+ *   3. Re-applies frosted glass panels on key containers
+ *   4. Forces light text everywhere for contrast
+ *
+ * TO CUSTOMIZE: edit the CSS variables in Section 1 below.
  */
 
 
@@ -40,6 +41,11 @@
   --glass-blur: 16px;
   --glass-blur-heavy: 24px;
 
+  /* Solid dark (for inputs, dropdowns, popovers where blur can't work) */
+  --glass-solid: #1e1e3a;
+  --glass-solid-light: #272750;
+  --glass-solid-lighter: #2f2f5e;
+
   /* Text */
   --glass-text-primary: #f1f5f9;
   --glass-text-secondary: #94a3b8;
@@ -61,30 +67,91 @@
 
 
 /* ============================================
-   2. GLOBAL BACKGROUND
+   2. NUCLEAR BACKGROUND RESET
+   Kill ALL white/light backgrounds so the
+   dark gradient shows through everywhere.
    ============================================ */
+*:not(img):not(video):not(canvas):not(svg):not(path):not(circle):not(rect):not(line):not(polygon):not(polyline):not(ellipse) {
+  background-color: transparent !important;
+}
+
+/* Apply the dark gradient ONLY on the root containers */
+html {
+  background: var(--glass-bg-from) !important;
+}
+
 body,
-#app,
-.hl_wrapper,
-.location-wrapper,
-.main-content {
+#app {
   background: linear-gradient(135deg, var(--glass-bg-from), var(--glass-bg-via), var(--glass-bg-to)) !important;
-  color: var(--glass-text-primary) !important;
   min-height: 100vh;
 }
 
 
 /* ============================================
-   3. SIDEBAR
+   3. GLOBAL TEXT & ICON COLOR ENFORCEMENT
+   Force light text and icons everywhere.
+   ============================================ */
+body,
+body *:not(img):not(video):not(canvas):not(svg):not(path) {
+  color: var(--glass-text-primary) !important;
+}
+
+/* Secondary / muted text */
+small,
+.text-muted,
+.text-secondary,
+[class*="text-muted"],
+[class*="text-secondary"],
+[class*="description"],
+[class*="subtitle"],
+[class*="helper"],
+[class*="hint"],
+[class*="caption"],
+[class*="meta"] {
+  color: var(--glass-text-secondary) !important;
+}
+
+/* Labels */
+label,
+.form-label,
+.n-form-item-label,
+[class*="label"] {
+  color: var(--glass-text-secondary) !important;
+  font-weight: 500 !important;
+}
+
+/* All SVGs and icon fonts → light */
+svg,
+svg *,
+i,
+[class*="icon"] {
+  color: var(--glass-text-secondary) !important;
+  fill: currentColor;
+}
+
+/* Links */
+a:not(.btn):not(.n-button):not([class*="btn"]) {
+  color: var(--glass-accent-light) !important;
+  text-decoration: none !important;
+  transition: var(--glass-transition) !important;
+}
+
+a:not(.btn):not(.n-button):not([class*="btn"]):hover {
+  color: var(--glass-secondary-light) !important;
+}
+
+
+/* ============================================
+   4. SIDEBAR
    ============================================ */
 .location-sidebar,
 .n-layout-sider,
 .n-layout-sider-scroll-container,
 #sb_main-sidebar,
-.sidebar,
-.sidebar-v2,
-.hl_sidebar,
-[class*="sidebar"] {
+[class*="sidebar"],
+[class*="side-nav"],
+[class*="left-nav"],
+[class*="leftNav"] {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) !important;
@@ -94,72 +161,49 @@ body,
 
 /* Sidebar nav items */
 .location-sidebar a,
-.location-sidebar .menu-item,
 .n-menu-item,
 .n-menu-item-content,
-.sidebar a,
-.sidebar .nav-link,
 [class*="sidebar"] a,
-[class*="sidebar"] .nav-link {
+[class*="sidebar"] .nav-link,
+[class*="side-nav"] a {
   color: var(--glass-text-secondary) !important;
-  border-radius: var(--glass-radius-sm) !important;
+  border-radius: var(--glass-radius-xs) !important;
   transition: var(--glass-transition) !important;
-  margin: 2px 8px !important;
+  margin: 2px 6px !important;
+  padding: 8px 12px !important;
 }
 
 .location-sidebar a:hover,
-.location-sidebar .menu-item:hover,
 .n-menu-item:hover,
-.sidebar a:hover,
 [class*="sidebar"] a:hover {
   background: var(--glass-bg-hover) !important;
   color: var(--glass-text-primary) !important;
-  transform: translateX(2px);
 }
 
 /* Active sidebar item */
-.location-sidebar a.active,
-.location-sidebar .menu-item.active,
 .n-menu-item--selected,
-.sidebar a.active,
-.sidebar .nav-link.active,
-[class*="sidebar"] a.router-link-active {
+[class*="sidebar"] a.active,
+[class*="sidebar"] .router-link-active,
+[class*="sidebar"] a[aria-current] {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.15)) !important;
   color: var(--glass-accent-light) !important;
   border-left: 3px solid var(--glass-accent) !important;
   box-shadow: var(--glass-shadow-glow) !important;
 }
 
-/* Sidebar icons */
-.location-sidebar svg,
-.location-sidebar i,
-.sidebar svg,
-.sidebar i,
-[class*="sidebar"] svg,
-[class*="sidebar"] i {
-  color: var(--glass-text-secondary) !important;
-  opacity: 0.8;
-  transition: var(--glass-transition) !important;
-}
-
-.location-sidebar a:hover svg,
-.location-sidebar a:hover i,
-.sidebar a:hover svg,
-sidebar a:hover i {
-  color: var(--glass-accent-light) !important;
-  opacity: 1;
-}
-
 
 /* ============================================
-   4. TOP HEADER / NAVBAR
+   5. TOP HEADER / NAVBAR
    ============================================ */
 header,
 .hl_header,
 .navbar,
 .n-layout-header,
-.top-header,
-[class*="header"] {
+[class*="top-header"],
+[class*="topbar"],
+[class*="TopBar"],
+[class*="header-container"],
+[class*="nav-bar"] {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) !important;
@@ -167,110 +211,169 @@ header,
   box-shadow: var(--glass-shadow-sm) !important;
 }
 
-header *,
-.hl_header *,
-.navbar *,
-.top-header * {
-  color: var(--glass-text-primary) !important;
+
+/* ============================================
+   6. MAIN CONTENT AREA WRAPPERS
+   Target GHL's inner layout containers that
+   normally have white backgrounds.
+   ============================================ */
+.n-layout,
+.n-layout-content,
+.n-layout-scroll-container,
+[class*="main-content"],
+[class*="MainContent"],
+[class*="content-wrapper"],
+[class*="ContentWrapper"],
+[class*="page-content"],
+[class*="PageContent"],
+[class*="location-wrapper"],
+[class*="LocationWrapper"],
+[class*="hl_wrapper"],
+[class*="app-wrapper"],
+[class*="body-content"],
+[class*="view-container"],
+[class*="ViewContainer"],
+[class*="route-view"],
+[class*="RouteView"],
+main,
+[role="main"] {
+  background: transparent !important;
 }
 
 
 /* ============================================
-   5. CARDS & PANELS (glass effect)
+   7. CARDS & PANELS (glass effect)
    ============================================ */
 .n-card,
 .card,
 .hl-card,
 .panel,
-.pipeline-card,
-.contact-card,
-.opportunity-card,
-[class*="card"],
-[class*="panel"],
 .widget,
-.stat-card {
+[class*="Card"],
+[class*="-card"],
+[class*="_card"],
+[class*="Panel"],
+[class*="-panel"],
+[class*="_panel"],
+[class*="Widget"] {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(var(--glass-blur)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius) !important;
-  box-shadow: var(--glass-shadow) !important;
+  box-shadow: var(--glass-shadow-sm) !important;
   transition: var(--glass-transition) !important;
-  color: var(--glass-text-primary) !important;
 }
 
 .n-card:hover,
 .card:hover,
-.pipeline-card:hover,
-.contact-card:hover,
-.opportunity-card:hover {
+[class*="Card"]:hover {
   background: var(--glass-bg-hover) !important;
   border-color: var(--glass-border-hover) !important;
   box-shadow: var(--glass-shadow), var(--glass-shadow-glow) !important;
-  transform: translateY(-2px);
 }
 
 /* Card headers */
 .n-card-header,
 .card-header,
-[class*="card-header"] {
+[class*="card-header"],
+[class*="CardHeader"] {
   background: transparent !important;
   border-bottom: 1px solid var(--glass-border) !important;
-  color: var(--glass-text-primary) !important;
-}
-
-/* Card body */
-.n-card__content,
-.card-body,
-[class*="card-body"] {
-  color: var(--glass-text-primary) !important;
 }
 
 
 /* ============================================
-   6. BUTTONS
+   8. CONTACT DETAIL — THREE-PANEL LAYOUT
+   Target the left info, center conversation,
+   and right activity panels specifically.
    ============================================ */
+[class*="contact-detail"],
+[class*="ContactDetail"],
+[class*="contact-info"],
+[class*="ContactInfo"],
+[class*="contact-profile"],
+[class*="ContactProfile"],
+[class*="contact-left"],
+[class*="contact-right"],
+[class*="detail-panel"],
+[class*="DetailPanel"],
+[class*="info-panel"],
+[class*="InfoPanel"],
+[class*="activity-panel"],
+[class*="ActivityPanel"],
+[class*="conversation-panel"],
+[class*="ConversationPanel"],
+[class*="notes-panel"],
+[class*="timeline-panel"],
+[class*="TimelinePanel"] {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(var(--glass-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+}
+
+/* The three-column splitter borders */
+[class*="contact-detail"] > div,
+[class*="ContactDetail"] > div {
+  border-color: var(--glass-border) !important;
+}
+
+
+/* ============================================
+   9. BUTTONS
+   ============================================ */
+/* Primary buttons */
 .n-button,
 .btn,
 button[class*="btn"],
-.hl-btn,
+button[class*="Btn"],
+[class*="btn-primary"],
+[class*="BtnPrimary"],
 [class*="button-primary"],
-[class*="btn-primary"] {
+[class*="ButtonPrimary"] {
   background: linear-gradient(135deg, var(--glass-accent), var(--glass-accent-dark)) !important;
   color: #fff !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: var(--glass-radius-sm) !important;
+  border-radius: var(--glass-radius-xs) !important;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
   transition: var(--glass-transition) !important;
   font-weight: 500 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .n-button:hover,
 .btn:hover,
-button[class*="btn"]:hover {
+button[class*="btn"]:hover,
+button[class*="Btn"]:hover {
   background: linear-gradient(135deg, var(--glass-accent-light), var(--glass-accent)) !important;
   box-shadow: 0 6px 25px rgba(99, 102, 241, 0.45) !important;
   transform: translateY(-1px);
 }
 
 .n-button:active,
-.btn:active,
-button[class*="btn"]:active {
+.btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3) !important;
 }
 
-/* Secondary / outline buttons */
+/* Secondary / outline / ghost buttons */
 .n-button--default,
+.n-button--tertiary,
 .btn-secondary,
 .btn-outline,
+.btn-ghost,
+.btn-light,
 [class*="btn-secondary"],
 [class*="btn-outline"],
-[class*="button-secondary"] {
+[class*="btn-ghost"],
+[class*="btn-light"],
+[class*="button-secondary"],
+[class*="BtnSecondary"],
+[class*="BtnOutline"],
+[class*="BtnGhost"] {
   background: var(--glass-bg) !important;
-  backdrop-filter: blur(var(--glass-blur)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
   color: var(--glass-text-primary) !important;
   border: 1px solid var(--glass-border) !important;
   box-shadow: none !important;
@@ -278,7 +381,9 @@ button[class*="btn"]:active {
 
 .n-button--default:hover,
 .btn-secondary:hover,
-.btn-outline:hover {
+.btn-outline:hover,
+.btn-ghost:hover,
+.btn-light:hover {
   background: var(--glass-bg-hover) !important;
   border-color: var(--glass-accent) !important;
   color: var(--glass-accent-light) !important;
@@ -287,36 +392,60 @@ button[class*="btn"]:active {
 
 /* Success buttons */
 .btn-success,
-[class*="btn-success"] {
+[class*="btn-success"],
+[class*="BtnSuccess"] {
   background: linear-gradient(135deg, #10b981, #059669) !important;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
 }
 
 /* Danger buttons */
 .btn-danger,
-[class*="btn-danger"] {
+[class*="btn-danger"],
+[class*="BtnDanger"] {
   background: linear-gradient(135deg, #ef4444, #dc2626) !important;
   box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Warning buttons */
+.btn-warning,
+[class*="btn-warning"],
+[class*="BtnWarning"] {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
 }
 
 
 /* ============================================
-   7. FORM INPUTS & SELECTS
+   10. FORM INPUTS, SELECTS, TEXTAREAS
+   Use solid dark backgrounds (not glass)
+   so text is always readable.
    ============================================ */
-input,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
 textarea,
 select,
 .n-input,
 .n-input__input-el,
+.n-input__textarea-el,
 .n-select,
 .form-control,
 .hl-input,
 [class*="form-control"],
+[class*="FormControl"],
 .n-input-wrapper,
-.n-base-selection {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(var(--glass-blur)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+.n-base-selection,
+.n-base-selection-label,
+[class*="input-wrapper"],
+[class*="InputWrapper"],
+[class*="select-wrapper"],
+[class*="SelectWrapper"],
+[class*="text-field"],
+[class*="TextField"],
+[class*="search-input"],
+[class*="SearchInput"] {
+  background: var(--glass-solid) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-xs) !important;
   color: var(--glass-text-primary) !important;
@@ -327,45 +456,65 @@ input:focus,
 textarea:focus,
 select:focus,
 .n-input--focus,
-.form-control:focus {
+.form-control:focus,
+[class*="form-control"]:focus {
   border-color: var(--glass-accent) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), var(--glass-shadow-glow) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2), var(--glass-shadow-glow) !important;
   outline: none !important;
 }
 
 input::placeholder,
 textarea::placeholder,
-.n-input__placeholder {
+.n-input__placeholder,
+[class*="placeholder"] {
   color: var(--glass-text-muted) !important;
 }
 
-label,
-.form-label,
-.n-form-item-label {
-  color: var(--glass-text-secondary) !important;
-  font-weight: 500 !important;
+/* Search bars */
+[class*="search-bar"],
+[class*="SearchBar"],
+[class*="search-box"],
+[class*="SearchBox"],
+[class*="search-container"],
+[class*="SearchContainer"] {
+  background: var(--glass-solid) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
 }
 
 
 /* ============================================
-   8. TABLES
+   11. TABLES
    ============================================ */
 .n-data-table,
-.table,
 table,
-[class*="data-table"] {
+.table,
+[class*="data-table"],
+[class*="DataTable"],
+[class*="table-wrapper"],
+[class*="TableWrapper"],
+[class*="table-container"],
+[class*="TableContainer"],
+[class*="contacts-table"],
+[class*="ContactsTable"] {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(var(--glass-blur)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+  border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius) !important;
   overflow: hidden;
-  border: 1px solid var(--glass-border) !important;
 }
 
-.n-data-table-th,
-.n-data-table thead th,
+/* Table header */
+thead,
+.n-data-table-thead,
+[class*="table-header"],
+[class*="TableHeader"] {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
 th,
-.table thead th {
+.n-data-table-th {
   background: rgba(255, 255, 255, 0.04) !important;
   color: var(--glass-text-secondary) !important;
   border-bottom: 1px solid var(--glass-border) !important;
@@ -375,43 +524,86 @@ th,
   letter-spacing: 0.05em;
 }
 
-.n-data-table-td,
+/* Table rows */
+tr,
+.n-data-table-tr {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  transition: var(--glass-transition) !important;
+}
+
+tr:hover,
+.n-data-table-tr:hover {
+  background: var(--glass-bg-hover) !important;
+}
+
+/* Alternating row tint */
+tr:nth-child(even),
+.n-data-table-tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+tr:nth-child(even):hover,
+.n-data-table-tr:nth-child(even):hover {
+  background: var(--glass-bg-hover) !important;
+}
+
 td,
-.table td {
+.n-data-table-td {
+  background: transparent !important;
   color: var(--glass-text-primary) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
 
-.n-data-table-tr:hover,
-tr:hover,
-.table tbody tr:hover {
-  background: var(--glass-bg-hover) !important;
+/* Table toolbar / filter bar */
+[class*="table-toolbar"],
+[class*="TableToolbar"],
+[class*="filter-bar"],
+[class*="FilterBar"],
+[class*="table-actions"],
+[class*="TableActions"],
+[class*="bulk-actions"],
+[class*="BulkActions"] {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--glass-radius-sm) !important;
+  margin-bottom: 12px !important;
+  padding: 8px 12px !important;
 }
 
 
 /* ============================================
-   9. MODALS & DIALOGS
+   12. MODALS & DIALOGS
    ============================================ */
 .n-modal,
 .modal,
 .modal-content,
 .n-dialog,
+.n-drawer,
+.n-drawer-content,
 [class*="modal-content"],
-.n-drawer {
-  background: rgba(15, 15, 35, 0.85) !important;
+[class*="ModalContent"],
+[class*="modal-body"],
+[class*="ModalBody"],
+[class*="drawer-content"],
+[class*="DrawerContent"],
+[class*="dialog-content"],
+[class*="DialogContent"] {
+  background: var(--glass-solid) !important;
   backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius) !important;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5), var(--glass-shadow-glow) !important;
-  color: var(--glass-text-primary) !important;
 }
 
 /* Modal overlay */
 .n-modal-mask,
 .modal-backdrop,
 .n-drawer-mask,
-[class*="modal-backdrop"] {
+[class*="modal-backdrop"],
+[class*="ModalBackdrop"],
+[class*="overlay"] {
   background: rgba(0, 0, 0, 0.6) !important;
   backdrop-filter: blur(4px) !important;
   -webkit-backdrop-filter: blur(4px) !important;
@@ -420,22 +612,38 @@ tr:hover,
 /* Modal header */
 .modal-header,
 .n-dialog__title,
-.n-card-header__main {
-  color: var(--glass-text-primary) !important;
+[class*="modal-header"],
+[class*="ModalHeader"] {
   border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* Modal footer */
+.modal-footer,
+[class*="modal-footer"],
+[class*="ModalFooter"] {
+  border-top: 1px solid var(--glass-border) !important;
 }
 
 
 /* ============================================
-   10. DROPDOWNS & POPOVERS
+   13. DROPDOWNS & POPOVERS
    ============================================ */
 .n-popover,
 .n-dropdown-menu,
 .dropdown-menu,
-[class*="dropdown-menu"],
 .n-select-menu,
-.n-base-select-menu {
-  background: rgba(15, 15, 35, 0.92) !important;
+.n-base-select-menu,
+[class*="dropdown-menu"],
+[class*="DropdownMenu"],
+[class*="popover-content"],
+[class*="PopoverContent"],
+[class*="select-menu"],
+[class*="SelectMenu"],
+[class*="menu-list"],
+[class*="MenuList"],
+[class*="autocomplete"],
+[class*="Autocomplete"] {
+  background: var(--glass-solid) !important;
   backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   border: 1px solid var(--glass-border) !important;
@@ -445,7 +653,15 @@ tr:hover,
 
 .n-dropdown-option,
 .dropdown-item,
-.n-base-select-option {
+.n-base-select-option,
+[class*="dropdown-item"],
+[class*="DropdownItem"],
+[class*="menu-item"],
+[class*="MenuItem"],
+[class*="option-item"],
+[class*="OptionItem"],
+[class*="select-option"],
+[class*="SelectOption"] {
   color: var(--glass-text-secondary) !important;
   transition: var(--glass-transition) !important;
   border-radius: var(--glass-radius-xs) !important;
@@ -453,26 +669,32 @@ tr:hover,
 
 .n-dropdown-option:hover,
 .dropdown-item:hover,
-.n-base-select-option--pending {
+.n-base-select-option--pending,
+[class*="dropdown-item"]:hover,
+[class*="DropdownItem"]:hover,
+[class*="menu-item"]:hover,
+[class*="MenuItem"]:hover {
   background: var(--glass-bg-hover) !important;
   color: var(--glass-text-primary) !important;
 }
 
 
 /* ============================================
-   11. PIPELINE / KANBAN BOARDS
+   14. PIPELINE / KANBAN BOARDS
    ============================================ */
-.pipeline-container,
-.pipeline-wrapper,
 [class*="pipeline"],
-[class*="kanban"] {
+[class*="Pipeline"],
+[class*="kanban"],
+[class*="Kanban"] {
   background: transparent !important;
 }
 
-.pipeline-stage,
-.pipeline-column,
+[class*="pipeline-stage"],
+[class*="PipelineStage"],
 [class*="stage-column"],
-[class*="kanban-column"] {
+[class*="StageColumn"],
+[class*="kanban-column"],
+[class*="KanbanColumn"] {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(var(--glass-blur)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
@@ -481,55 +703,57 @@ tr:hover,
   margin: 0 6px !important;
 }
 
-/* Pipeline stage headers */
-.pipeline-stage-header,
+/* Stage headers */
 [class*="stage-header"],
-[class*="kanban-header"] {
+[class*="StageHeader"],
+[class*="kanban-header"],
+[class*="KanbanHeader"],
+[class*="pipeline-header"],
+[class*="PipelineHeader"] {
   background: rgba(255, 255, 255, 0.04) !important;
   border-bottom: 1px solid var(--glass-border) !important;
-  color: var(--glass-text-primary) !important;
   font-weight: 600 !important;
 }
 
-/* Opportunity cards in pipeline */
-.pipeline-card,
-.opportunity-card,
-[class*="opportunity-card"],
-[class*="deal-card"] {
+/* Opportunity / deal cards */
+[class*="opportunity"],
+[class*="Opportunity"],
+[class*="deal-card"],
+[class*="DealCard"] {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-sm) !important;
-  margin-bottom: 8px !important;
   transition: var(--glass-transition) !important;
 }
 
-.pipeline-card:hover,
-.opportunity-card:hover {
+[class*="opportunity"]:hover,
+[class*="Opportunity"]:hover,
+[class*="deal-card"]:hover,
+[class*="DealCard"]:hover {
   border-color: var(--glass-accent) !important;
   box-shadow: var(--glass-shadow-glow) !important;
 }
 
 
 /* ============================================
-   12. CALENDAR
+   15. CALENDAR
    ============================================ */
 .fc,
 .fc-view,
-[class*="calendar"] {
+[class*="calendar"],
+[class*="Calendar"] {
   background: transparent !important;
 }
 
-.fc-col-header-cell,
-.fc .fc-col-header-cell {
+.fc-col-header-cell {
   background: rgba(255, 255, 255, 0.04) !important;
   color: var(--glass-text-secondary) !important;
   border-color: var(--glass-border) !important;
 }
 
-.fc-daygrid-day,
-.fc .fc-daygrid-day {
+.fc-daygrid-day {
   border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
@@ -537,8 +761,7 @@ tr:hover,
   background: var(--glass-bg-hover) !important;
 }
 
-.fc-event,
-.fc .fc-event {
+.fc-event {
   background: linear-gradient(135deg, var(--glass-accent), var(--glass-secondary)) !important;
   border: none !important;
   border-radius: var(--glass-radius-xs) !important;
@@ -546,114 +769,135 @@ tr:hover,
   padding: 2px 6px !important;
 }
 
-.fc-today,
-.fc .fc-day-today {
+.fc-day-today {
   background: rgba(99, 102, 241, 0.08) !important;
 }
 
-.fc-button,
-.fc .fc-button {
+.fc-button {
   background: var(--glass-bg) !important;
-  backdrop-filter: blur(var(--glass-blur)) !important;
   border: 1px solid var(--glass-border) !important;
   color: var(--glass-text-primary) !important;
   border-radius: var(--glass-radius-xs) !important;
 }
 
-.fc-button:hover,
-.fc .fc-button:hover {
+.fc-button:hover {
   background: var(--glass-bg-hover) !important;
   border-color: var(--glass-accent) !important;
 }
 
-.fc-button-active,
-.fc .fc-button-active {
+.fc-button-active {
   background: linear-gradient(135deg, var(--glass-accent), var(--glass-accent-dark)) !important;
   border-color: var(--glass-accent) !important;
 }
 
 
 /* ============================================
-   13. CONVERSATIONS / CHAT
+   16. CONVERSATIONS / CHAT
    ============================================ */
-.conversation-list,
-.conversations-wrapper,
-[class*="conversation-list"] {
+[class*="conversation-list"],
+[class*="ConversationList"],
+[class*="conversations-wrapper"],
+[class*="ConversationsWrapper"],
+[class*="chat-list"],
+[class*="ChatList"] {
   background: var(--glass-bg) !important;
   backdrop-filter: blur(var(--glass-blur)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
   border-right: 1px solid var(--glass-border) !important;
 }
 
-.conversation-item,
-[class*="conversation-item"] {
+[class*="conversation-item"],
+[class*="ConversationItem"],
+[class*="chat-item"],
+[class*="ChatItem"] {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
   transition: var(--glass-transition) !important;
 }
 
-.conversation-item:hover,
-[class*="conversation-item"]:hover {
+[class*="conversation-item"]:hover,
+[class*="ConversationItem"]:hover {
   background: var(--glass-bg-hover) !important;
 }
 
-.conversation-item.active,
-[class*="conversation-item"].active {
+[class*="conversation-item"].active,
+[class*="ConversationItem"].active {
   background: rgba(99, 102, 241, 0.12) !important;
   border-left: 3px solid var(--glass-accent) !important;
 }
 
 /* Chat messages */
-.message-bubble,
 [class*="message-bubble"],
-[class*="chat-bubble"] {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+[class*="MessageBubble"],
+[class*="chat-bubble"],
+[class*="ChatBubble"] {
+  background: var(--glass-solid-light) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: 16px 16px 16px 4px !important;
-  color: var(--glass-text-primary) !important;
 }
 
-/* Sent messages (outbound) */
-.message-bubble.sent,
+/* Sent messages */
 [class*="message-sent"],
-[class*="outbound"] .message-bubble {
+[class*="MessageSent"],
+[class*="outbound"] [class*="bubble"],
+[class*="sent"] [class*="bubble"] {
   background: linear-gradient(135deg, var(--glass-accent), var(--glass-accent-dark)) !important;
   border: none !important;
   border-radius: 16px 16px 4px 16px !important;
   color: #fff !important;
 }
 
+/* Chat input area */
+[class*="chat-input"],
+[class*="ChatInput"],
+[class*="message-input"],
+[class*="MessageInput"],
+[class*="compose"],
+[class*="Compose"] {
+  background: var(--glass-solid) !important;
+  border-top: 1px solid var(--glass-border) !important;
+}
+
 
 /* ============================================
-   14. TABS & NAVIGATION PILLS
+   17. TABS & NAVIGATION PILLS
    ============================================ */
 .n-tabs,
 .nav-tabs,
-.tab-group,
-[class*="nav-tabs"] {
+[class*="nav-tabs"],
+[class*="NavTabs"],
+[class*="tab-group"],
+[class*="TabGroup"],
+[class*="tab-bar"],
+[class*="TabBar"] {
   border-bottom: 1px solid var(--glass-border) !important;
 }
 
 .n-tabs-tab,
 .nav-tabs .nav-link,
-.tab-item,
-[class*="tab-item"] {
+[class*="tab-item"],
+[class*="TabItem"],
+[class*="tab-btn"],
+[class*="TabBtn"] {
   color: var(--glass-text-secondary) !important;
   transition: var(--glass-transition) !important;
-  border-radius: var(--glass-radius-sm) var(--glass-radius-sm) 0 0 !important;
   border: none !important;
+  border-radius: var(--glass-radius-xs) var(--glass-radius-xs) 0 0 !important;
 }
 
 .n-tabs-tab:hover,
-.nav-tabs .nav-link:hover {
+.nav-tabs .nav-link:hover,
+[class*="tab-item"]:hover,
+[class*="TabItem"]:hover {
   color: var(--glass-text-primary) !important;
   background: var(--glass-bg-hover) !important;
 }
 
 .n-tabs-tab--active,
 .nav-tabs .nav-link.active,
-[class*="tab-item"].active {
+[class*="tab-item"].active,
+[class*="TabItem"].active,
+[class*="tab-item"][aria-selected="true"],
+[class*="TabItem"][aria-selected="true"] {
   color: var(--glass-accent-light) !important;
   background: var(--glass-bg) !important;
   border-bottom: 2px solid var(--glass-accent) !important;
@@ -661,17 +905,21 @@ tr:hover,
 
 
 /* ============================================
-   15. BADGES & STATUS INDICATORS
+   18. BADGES & TAGS
    ============================================ */
 .n-tag,
 .badge,
 .n-badge,
+.tag,
 [class*="badge"],
-[class*="status-badge"],
-.tag {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+[class*="Badge"],
+[class*="tag-item"],
+[class*="TagItem"],
+[class*="status-label"],
+[class*="StatusLabel"],
+[class*="chip"],
+[class*="Chip"] {
+  background: var(--glass-solid-light) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: 20px !important;
   color: var(--glass-text-primary) !important;
@@ -680,38 +928,46 @@ tr:hover,
   padding: 2px 10px !important;
 }
 
-.badge-success,
-.n-tag--success,
+/* Status variants */
 [class*="badge-success"],
+[class*="BadgeSuccess"],
+[class*="tag-success"],
 [class*="status-open"],
-[class*="status-active"] {
+[class*="status-active"],
+[class*="StatusActive"],
+.n-tag--success {
   background: rgba(16, 185, 129, 0.15) !important;
   color: #34d399 !important;
   border-color: rgba(16, 185, 129, 0.3) !important;
 }
 
-.badge-warning,
-.n-tag--warning,
 [class*="badge-warning"],
-[class*="status-pending"] {
+[class*="BadgeWarning"],
+[class*="tag-warning"],
+[class*="status-pending"],
+[class*="StatusPending"],
+.n-tag--warning {
   background: rgba(245, 158, 11, 0.15) !important;
   color: #fbbf24 !important;
   border-color: rgba(245, 158, 11, 0.3) !important;
 }
 
-.badge-danger,
-.n-tag--error,
 [class*="badge-danger"],
+[class*="BadgeDanger"],
+[class*="tag-danger"],
 [class*="status-closed"],
-[class*="status-lost"] {
+[class*="status-lost"],
+[class*="StatusLost"],
+.n-tag--error {
   background: rgba(239, 68, 68, 0.15) !important;
   color: #f87171 !important;
   border-color: rgba(239, 68, 68, 0.3) !important;
 }
 
-.badge-info,
-.n-tag--info,
-[class*="badge-info"] {
+[class*="badge-info"],
+[class*="BadgeInfo"],
+[class*="tag-info"],
+.n-tag--info {
   background: rgba(6, 182, 212, 0.15) !important;
   color: #22d3ee !important;
   border-color: rgba(6, 182, 212, 0.3) !important;
@@ -719,23 +975,22 @@ tr:hover,
 
 
 /* ============================================
-   16. TOOLTIPS
+   19. TOOLTIPS
    ============================================ */
 .n-tooltip,
 .tooltip,
-[class*="tooltip"] {
-  background: rgba(15, 15, 35, 0.95) !important;
-  backdrop-filter: blur(var(--glass-blur)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
+[class*="tooltip"],
+[class*="Tooltip"],
+[role="tooltip"] {
+  background: var(--glass-solid) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-xs) !important;
-  color: var(--glass-text-primary) !important;
   box-shadow: var(--glass-shadow) !important;
 }
 
 
 /* ============================================
-   17. SCROLLBARS
+   20. SCROLLBARS
    ============================================ */
 ::-webkit-scrollbar {
   width: 8px;
@@ -761,194 +1016,69 @@ tr:hover,
 
 
 /* ============================================
-   18. TYPOGRAPHY OVERRIDES
-   ============================================ */
-h1, h2, h3, h4, h5, h6,
-.n-h1, .n-h2, .n-h3, .n-h4,
-[class*="heading"],
-[class*="title"] {
-  color: var(--glass-text-primary) !important;
-  font-weight: 600 !important;
-}
-
-p, span, div, li, a,
-.n-text {
-  color: var(--glass-text-primary);
-}
-
-a:not(.btn):not(.n-button):not([class*="btn"]) {
-  color: var(--glass-accent-light) !important;
-  text-decoration: none !important;
-  transition: var(--glass-transition) !important;
-}
-
-a:not(.btn):not(.n-button):not([class*="btn"]):hover {
-  color: var(--glass-secondary-light) !important;
-  text-decoration: underline !important;
-}
-
-/* Muted / secondary text */
-.text-muted,
-.text-secondary,
-small,
-[class*="text-muted"],
-[class*="text-secondary"],
-[class*="description"],
-[class*="subtitle"] {
-  color: var(--glass-text-secondary) !important;
-}
-
-
-/* ============================================
-   19. LOADING STATES & SPINNERS
-   ============================================ */
-.n-spin,
-.spinner,
-[class*="spinner"],
-[class*="loading"] {
-  color: var(--glass-accent-light) !important;
-}
-
-
-/* ============================================
-   20. BREADCRUMBS & PAGE HEADERS
-   ============================================ */
-.breadcrumb,
-.n-breadcrumb,
-[class*="breadcrumb"] {
-  background: transparent !important;
-  color: var(--glass-text-muted) !important;
-}
-
-.breadcrumb a,
-.n-breadcrumb-item a {
-  color: var(--glass-text-secondary) !important;
-}
-
-.breadcrumb a:hover,
-.n-breadcrumb-item a:hover {
-  color: var(--glass-accent-light) !important;
-}
-
-/* Page headers */
-.page-header,
-[class*="page-header"],
-[class*="page-title"] {
-  background: transparent !important;
-  border-bottom: 1px solid var(--glass-border) !important;
-  padding-bottom: 16px !important;
-  margin-bottom: 24px !important;
-}
-
-
-/* ============================================
-   21. CONTACT DETAILS PANEL
-   ============================================ */
-.contact-details,
-.contact-info,
-[class*="contact-detail"],
-[class*="contact-info"],
-.detail-panel,
-.info-panel {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(var(--glass-blur)) !important;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: var(--glass-radius) !important;
-}
-
-
-/* ============================================
-   22. AVATAR / PROFILE IMAGES
-   ============================================ */
-.n-avatar,
-.avatar,
-[class*="avatar"] {
-  border: 2px solid var(--glass-border) !important;
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2) !important;
-}
-
-
-/* ============================================
-   23. PROGRESS BARS
-   ============================================ */
-.n-progress,
-.progress,
-[class*="progress-bar"] {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-radius: 10px !important;
-  overflow: hidden;
-}
-
-.n-progress-graph-line-fill,
-.progress-bar,
-[class*="progress-fill"] {
-  background: linear-gradient(90deg, var(--glass-accent), var(--glass-secondary)) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
-}
-
-
-/* ============================================
-   24. TOGGLE / SWITCH
-   ============================================ */
-.n-switch,
-.toggle,
-[class*="switch"],
-[class*="toggle"] {
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-.n-switch--active,
-[class*="switch"].active,
-[class*="toggle"].active {
-  background: linear-gradient(135deg, var(--glass-accent), var(--glass-secondary)) !important;
-}
-
-
-/* ============================================
-   25. ALERTS & NOTIFICATIONS
+   21. ALERTS & NOTIFICATIONS
    ============================================ */
 .n-alert,
 .alert,
 .n-notification,
-.notification,
 [class*="alert"],
+[class*="Alert"],
 [class*="notification"],
-[class*="toast"] {
-  background: rgba(15, 15, 35, 0.9) !important;
+[class*="Notification"],
+[class*="toast"],
+[class*="Toast"] {
+  background: var(--glass-solid) !important;
   backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--glass-radius-sm) !important;
-  color: var(--glass-text-primary) !important;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
 
 /* ============================================
-   26. CHECKBOX & RADIO
+   22. CHECKBOX, RADIO, TOGGLE
    ============================================ */
-.n-checkbox,
-.n-radio,
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--glass-accent) !important;
 }
 
+.n-switch,
+[class*="switch"],
+[class*="Switch"],
+[class*="toggle"],
+[class*="Toggle"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.n-switch--active,
+[class*="switch"].active,
+[class*="Switch"].active,
+[class*="toggle"].active,
+[class*="Toggle"].active,
+[class*="switch"][aria-checked="true"],
+[class*="toggle"][aria-checked="true"] {
+  background: linear-gradient(135deg, var(--glass-accent), var(--glass-secondary)) !important;
+}
+
 
 /* ============================================
-   27. PAGINATION
+   23. PAGINATION
    ============================================ */
 .n-pagination,
 .pagination,
-[class*="pagination"] {
+[class*="pagination"],
+[class*="Pagination"] {
   color: var(--glass-text-secondary) !important;
 }
 
 .n-pagination .n-pagination-item,
-.pagination .page-item .page-link,
-[class*="pagination"] a {
+.pagination .page-link,
+[class*="pagination"] a,
+[class*="Pagination"] a,
+[class*="page-btn"],
+[class*="PageBtn"] {
   background: var(--glass-bg) !important;
   border: 1px solid var(--glass-border) !important;
   color: var(--glass-text-secondary) !important;
@@ -957,7 +1087,7 @@ input[type="radio"] {
 }
 
 .n-pagination .n-pagination-item:hover,
-.pagination .page-item .page-link:hover {
+.pagination .page-link:hover {
   background: var(--glass-bg-hover) !important;
   color: var(--glass-text-primary) !important;
 }
@@ -971,35 +1101,112 @@ input[type="radio"] {
 
 
 /* ============================================
-   28. DIVIDERS
+   24. PROGRESS BARS
+   ============================================ */
+.n-progress,
+.progress,
+[class*="progress-bar"],
+[class*="ProgressBar"] {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+[class*="progress-fill"],
+[class*="ProgressFill"],
+.n-progress-graph-line-fill,
+.progress-bar {
+  background: linear-gradient(90deg, var(--glass-accent), var(--glass-secondary)) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
+}
+
+
+/* ============================================
+   25. AVATARS
+   ============================================ */
+.n-avatar,
+[class*="avatar"],
+[class*="Avatar"] {
+  border: 2px solid var(--glass-border) !important;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2) !important;
+}
+
+
+/* ============================================
+   26. DIVIDERS & BORDERS
    ============================================ */
 hr,
 .n-divider,
-.divider,
-[class*="divider"] {
+[class*="divider"],
+[class*="Divider"],
+[class*="separator"],
+[class*="Separator"] {
   border-color: var(--glass-border) !important;
   opacity: 0.6;
 }
 
+/* All general borders → glass border color */
+[style*="border"],
+[class*="border"] {
+  border-color: var(--glass-border) !important;
+}
+
 
 /* ============================================
-   29. EMPTY STATES
+   27. BREADCRUMBS & PAGE HEADERS
+   ============================================ */
+[class*="breadcrumb"],
+[class*="Breadcrumb"] {
+  background: transparent !important;
+}
+
+/* Page headers */
+[class*="page-header"],
+[class*="PageHeader"],
+[class*="page-title"],
+[class*="PageTitle"] {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+
+/* ============================================
+   28. EMPTY STATES & LOADING
    ============================================ */
 .n-empty,
-.empty-state,
 [class*="empty-state"],
-[class*="no-data"] {
+[class*="EmptyState"],
+[class*="no-data"],
+[class*="NoData"] {
   color: var(--glass-text-muted) !important;
 }
 
-.n-empty svg,
-.empty-state svg {
-  opacity: 0.4;
+.n-spin,
+[class*="spinner"],
+[class*="Spinner"],
+[class*="loading"],
+[class*="Loading"] {
+  color: var(--glass-accent-light) !important;
 }
 
 
 /* ============================================
-   30. GLOBAL ANIMATION SMOOTHING
+   29. BACKGROUND-IMAGE PRESERVES
+   Make sure background images (logos, etc.)
+   aren't destroyed by the nuclear reset.
+   ============================================ */
+[style*="background-image"],
+[style*="background: url"],
+img,
+video,
+canvas {
+  background-color: unset !important;
+}
+
+
+/* ============================================
+   30. SMOOTH TRANSITIONS ON EVERYTHING
    ============================================ */
 *,
 *::before,
