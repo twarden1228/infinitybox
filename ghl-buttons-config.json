@@ -109,5 +109,36 @@
         "fieldName": "Bot Status",
         "onValue": "Bot On",
         "offValue": "Bot Off"
+    },
+    {
+        "id": "btn_1771897781813_2",
+        "name": "Dispositions",
+        "type": "dropdown",
+        "options": [
+            {
+                "id": "opt_1771897825846_3",
+                "name": "No Show Drip",
+                "type": "tag",
+                "value": "no-show"
+            },
+            {
+                "id": "opt_1771897839032_4",
+                "name": "Not Interested",
+                "type": "tag",
+                "value": "not interested"
+            },
+            {
+                "id": "opt_1771897873581_5",
+                "name": "Cancel Appointment",
+                "type": "tag",
+                "value": "appointment cancelled"
+            },
+            {
+                "id": "opt_1771897890131_6",
+                "name": "Follow/up",
+                "type": "tag",
+                "value": "followup"
+            }
+        ]
     }
 ]
