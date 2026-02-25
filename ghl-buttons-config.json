@@ -140,5 +140,11 @@
                 "value": "followup"
             }
         ]
+    },
+    {
+        "id": "btn_1772030774561_7",
+        "name": "Test",
+        "type": "link",
+        "value": "https://google.com"
     }
 ]
