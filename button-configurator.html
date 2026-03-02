@@ -3554,24 +3554,41 @@
     var GITHUB_TOKEN_KEY = "ghl_github_token";
 
     // Load and auto-save all admin settings
+    var SETTINGS_FIELDS = [
+        { id: 'config-url',        key: 'ghl_config_url' },
+        { id: 'backend-url',       key: 'ghl_backend_url' },
+        { id: 'api-secret',        key: 'ghl_api_secret' },
+        { id: 'supabase-anon-key', key: 'ghl_supabase_anon_key' },
+        { id: 'github-token',      key: GITHUB_TOKEN_KEY }
+    ];
+    function restoreSettings() {
+        for (var i = 0; i < SETTINGS_FIELDS.length; i++) {
+            var f = SETTINGS_FIELDS[i];
+            var el = document.getElementById(f.id);
+            if (!el) continue;
+            var saved = localStorage.getItem(f.key);
+            if (saved !== null && saved !== '') el.value = saved;
+        }
+    }
+    // Restore immediately (script is at bottom, DOM should be ready)
+    restoreSettings();
+    // Also restore after DOMContentLoaded as a safety net
+    // (some browsers re-apply hardcoded value= attributes after initial parse)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', restoreSettings);
+    }
+    // Save on input and change (covers typing, paste, and autofill)
     (function() {
-        var fields = [
-            { id: 'config-url',        key: 'ghl_config_url' },
-            { id: 'backend-url',       key: 'ghl_backend_url' },
-            { id: 'api-secret',        key: 'ghl_api_secret' },
-            { id: 'supabase-anon-key', key: 'ghl_supabase_anon_key' },
-            { id: 'github-token',      key: GITHUB_TOKEN_KEY }
-        ];
-        for (var i = 0; i < fields.length; i++) {
+        for (var i = 0; i < SETTINGS_FIELDS.length; i++) {
             (function(f) {
                 var el = document.getElementById(f.id);
                 if (!el) return;
-                var saved = localStorage.getItem(f.key);
-                if (saved) el.value = saved;
-                el.addEventListener('input', function() {
-                    localStorage.setItem(f.key, this.value.trim());
-                });
-            })(fields[i]);
+                function persist() {
+                    localStorage.setItem(f.key, el.value.trim());
+                }
+                el.addEventListener('input', persist);
+                el.addEventListener('change', persist);
+            })(SETTINGS_FIELDS[i]);
         }
     })();
 
