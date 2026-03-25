@@ -107,8 +107,8 @@
         "name": "A.I Bot",
         "type": "toggle",
         "fieldName": "Bot Status",
-        "onValue": "On ✅",
-        "offValue": "Off ❌"
+        "onValue": "ON ✅",
+        "offValue": "OFF ❌"
     },
     {
         "id": "btn_1771897781813_2",
