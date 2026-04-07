@@ -129,6 +129,24 @@
                 "name": "American General",
                 "type": "link",
                 "value": "https://connext.corebridgefinancial.com/life/connext-portal/public/login"
+            },
+            {
+                "id": "opt_1775577344220_9",
+                "name": "North American",
+                "type": "link",
+                "value": "https://www.northamericancompany.com/naloginpage"
+            },
+            {
+                "id": "opt_1775577379103_10",
+                "name": "American Equity",
+                "type": "link",
+                "value": "https://agent.american-equity.com/"
+            },
+            {
+                "id": "opt_1775577397987_11",
+                "name": "Quility",
+                "type": "link",
+                "value": "https://hq.quility.com"
             }
         ]
     },
