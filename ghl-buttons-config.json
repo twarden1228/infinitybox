@@ -93,6 +93,42 @@
                 "name": "Mutual of Omaha",
                 "type": "link",
                 "value": "https://accounts.mutualofomaha.com/"
+            },
+            {
+                "id": "opt_1775576906654_2",
+                "name": "UHL",
+                "type": "link",
+                "value": "agentportal.unitedhomelife.com/autologin"
+            },
+            {
+                "id": "opt_1775577023271_3",
+                "name": "Banner Life",
+                "type": "link",
+                "value": "https://partner.lgamerica.com/"
+            },
+            {
+                "id": "opt_1775577060738_4",
+                "name": "Occidental",
+                "type": "link",
+                "value": "https://www.occidentallife.com/v4/agentLogin.php"
+            },
+            {
+                "id": "opt_1775577093720_5",
+                "name": "SBLI",
+                "type": "link",
+                "value": "https://www.sbliagent.com/agentauth/login.aspx?ReturnUrl=%2Fagent"
+            },
+            {
+                "id": "opt_1775577112504_6",
+                "name": "Legal And General",
+                "type": "link",
+                "value": "https://partner.lgamerica.com/"
+            },
+            {
+                "id": "opt_1775577199037_8",
+                "name": "American General",
+                "type": "link",
+                "value": "https://connext.corebridgefinancial.com/life/connext-portal/public/login"
             }
         ]
     },
