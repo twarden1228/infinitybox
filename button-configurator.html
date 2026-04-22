@@ -2303,8 +2303,8 @@
         lines.push('            style.textContent = CUSTOM_CSS;');
         lines.push('        } else {');
         lines.push('            style.textContent = [');
-        lines.push('                "#" + CONTAINER_ID + " { display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:flex-start; }",');
-        lines.push('                ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('                "#" + CONTAINER_ID + " { display:flex;flex-wrap:nowrap;gap:6px;padding:0;margin-right:8px;align-items:center;align-self:center; }",');
+        lines.push('                ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit;white-space:nowrap; }",');
         lines.push('                ".gcb-btn:hover { background:#f9fafb;border-color:#9ca3af; }",');
         lines.push('                ".gcb-icon { width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0; }",');
         lines.push('                ".gcb-icon svg { width:14px;height:14px; }",');
@@ -2316,7 +2316,7 @@
         lines.push('                ".gcb-dropdown.gcb-open { display:block; }",');
         lines.push('                ".gcb-dd-item { padding:10px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s; }",');
         lines.push('                ".gcb-dd-item:hover { background:#f1f5f9; }",');
-        lines.push('                ".gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:13px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s; }",');
+        lines.push('                ".gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:12px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s;white-space:nowrap; }",');
         lines.push('                ".gcb-settings-btn:hover { background:#e2e8f0; }",');
         lines.push('                ".gcb-panel-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:10002; }",');
         lines.push('                ".gcb-panel-overlay.gcb-open { display:block; }",');
@@ -2406,12 +2406,13 @@
         lines.push('                ".gcb-df-success h3 { font-size:18px;font-weight:700;color:#1e293b;margin:0 0 6px; }",');
         lines.push('                ".gcb-df-success p { font-size:14px;color:#64748b;margin:0; }",');
         lines.push('                ".gcb-icon-toggle svg { color:#7c3aed; }",');
-        lines.push('                ".gcb-toggle-container { display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('                ".gcb-toggle-container { display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:12px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit;white-space:nowrap; }",');
         lines.push('                ".gcb-toggle-container:hover { border-color:#9ca3af; }",');
         lines.push('                ".gcb-toggle-track { position:relative;width:36px;height:20px;background:#cbd5e1;border-radius:20px;transition:background 0.2s;flex-shrink:0; }",');
         lines.push('                ".gcb-toggle-track.gcb-on { background:#3b82f6; }",');
         lines.push('                ".gcb-toggle-thumb { position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15); }",');
-        lines.push('                ".gcb-toggle-track.gcb-on .gcb-toggle-thumb { transform:translateX(16px); }"');
+        lines.push('                ".gcb-toggle-track.gcb-on .gcb-toggle-thumb { transform:translateX(16px); }",');
+        lines.push('                ".gcb-toggle-container.gcb-toggle-loading { opacity:0.5;pointer-events:none;cursor:wait; }"');
         lines.push('            ].join("\\n");');
         lines.push('        }');
         lines.push('        document.head.appendChild(style);');
@@ -3238,9 +3239,16 @@
         lines.push('');
         lines.push('    // ---- FIND TARGET ELEMENT ----');
         lines.push('    function findTarget() {');
+        lines.push('        // Inject into the topmenu nav row (same row as Contacts/Smart Lists/Bulk Actions tabs)');
+        lines.push('        var topmenu = document.querySelector(".topmenu-nav");');
+        lines.push('        if (topmenu) return topmenu;');
+        lines.push('        // Fallback - find by tab title element');
+        lines.push('        var titleEl = document.querySelector(".topmenu-navtitle");');
+        lines.push('        if (titleEl && titleEl.parentElement) return titleEl.parentElement;');
+        lines.push('        // Old fallbacks');
         lines.push('        var target = document.getElementById("contact-details");');
         lines.push('        if (target) return target;');
-        lines.push('        var selectors = [".hl_contact-details-left", ".hl_contact-details", "header", "main"];');
+        lines.push('        var selectors = [".hl_contact-details-left", ".hl_contact-details"];');
         lines.push('        for (var i = 0; i < selectors.length; i++) {');
         lines.push('            target = document.querySelector(selectors[i]);');
         lines.push('            if (target) return target;');
@@ -3388,27 +3396,45 @@
         lines.push('                    thumb.className = "gcb-toggle-thumb";');
         lines.push('                    track.appendChild(thumb);');
         lines.push('');
-        lines.push('                    function readCurrentState() {');
-        lines.push('                        var labels = document.querySelectorAll("label");');
-        lines.push('                        for (var li = 0; li < labels.length; li++) {');
-        lines.push('                            if (labels[li].textContent.trim().toLowerCase() === b.fieldName.toLowerCase()) {');
-        lines.push('                                var parent = labels[li].closest(".form-group") || labels[li].parentElement;');
-        lines.push('                                var sel = parent.querySelector("select");');
-        lines.push('                                if (sel && sel.value.toLowerCase() === b.onValue.toLowerCase()) {');
-        lines.push('                                    return true;');
-        lines.push('                                }');
-        lines.push('                                return false;');
-        lines.push('                            }');
+        lines.push('                    // Start in loading state while we fetch the real value from GHL');
+        lines.push('                    wrapper.classList.add("gcb-toggle-loading");');
+        lines.push('                    var isOn = false;');
+        lines.push('                    // Optimistic: show last known state from localStorage until the API responds');
+        lines.push('                    try {');
+        lines.push('                        var stored = localStorage.getItem("gcb_toggle_" + b.id);');
+        lines.push('                        if (stored === "on") { isOn = true; track.classList.add("gcb-on"); }');
+        lines.push('                    } catch(e) {}');
+        lines.push('                    (function() {');
+        lines.push('                        var contactId = getContactId();');
+        lines.push('                        var locationId = getLocationId();');
+        lines.push('                        if (!contactId || !locationId) {');
+        lines.push('                            wrapper.classList.remove("gcb-toggle-loading");');
+        lines.push('                            return;');
         lines.push('                        }');
-        lines.push('                        try {');
-        lines.push('                            var stored = localStorage.getItem("gcb_toggle_" + b.id);');
-        lines.push('                            if (stored === "on") return true;');
-        lines.push('                        } catch(e) {}');
-        lines.push('                        return false;');
-        lines.push('                    }');
-        lines.push('');
-        lines.push('                    var isOn = readCurrentState();');
-        lines.push('                    if (isOn) track.classList.add("gcb-on");');
+        lines.push('                        var xhr = new XMLHttpRequest();');
+        lines.push('                        xhr.open("POST", BACKEND_URL + "/get-contact-field?apikey=" + SUPABASE_KEY, true);');
+        lines.push('                        xhr.setRequestHeader("Content-Type", "application/json");');
+        lines.push('                        xhr.setRequestHeader("X-Api-Key", API_SECRET);');
+        lines.push('                        xhr.onreadystatechange = function() {');
+        lines.push('                            if (xhr.readyState !== 4) return;');
+        lines.push('                            var shouldBeOn = false;');
+        lines.push('                            if (xhr.status >= 200 && xhr.status < 300) {');
+        lines.push('                                try {');
+        lines.push('                                    var result = JSON.parse(xhr.responseText);');
+        lines.push('                                    if (result && result.value != null && b.onValue && String(result.value).toLowerCase() === String(b.onValue).toLowerCase()) {');
+        lines.push('                                        shouldBeOn = true;');
+        lines.push('                                    }');
+        lines.push('                                } catch(e) { console.log("[GHL Buttons] get-contact-field parse error:", e); }');
+        lines.push('                            } else {');
+        lines.push('                                console.log("[GHL Buttons] get-contact-field failed, defaulting to OFF. Status:", xhr.status);');
+        lines.push('                            }');
+        lines.push('                            isOn = shouldBeOn;');
+        lines.push('                            if (isOn) { track.classList.add("gcb-on"); } else { track.classList.remove("gcb-on"); }');
+        lines.push('                            try { localStorage.setItem("gcb_toggle_" + b.id, isOn ? "on" : "off"); } catch(e) {}');
+        lines.push('                            wrapper.classList.remove("gcb-toggle-loading");');
+        lines.push('                        };');
+        lines.push('                        xhr.send(JSON.stringify({ locationId: locationId, contactId: contactId, fieldName: b.fieldName }));');
+        lines.push('                    })();');
         lines.push('');
         lines.push('                    wrapper.addEventListener("click", function() {');
         lines.push('                        isOn = !isOn;');
@@ -3440,7 +3466,7 @@
         lines.push('        });');
         lines.push('        container.appendChild(settingsBtn);');
         lines.push('');
-        lines.push('        // Insert at top of target');
+        lines.push('        // Insert at start of topmenu-nav row so buttons sit BEFORE the tabs (left side)');
         lines.push('        if (target.firstChild) {');
         lines.push('            target.insertBefore(container, target.firstChild);');
         lines.push('        } else {');
@@ -3554,24 +3580,41 @@
     var GITHUB_TOKEN_KEY = "ghl_github_token";
 
     // Load and auto-save all admin settings
+    var SETTINGS_FIELDS = [
+        { id: 'config-url',        key: 'ghl_config_url' },
+        { id: 'backend-url',       key: 'ghl_backend_url' },
+        { id: 'api-secret',        key: 'ghl_api_secret' },
+        { id: 'supabase-anon-key', key: 'ghl_supabase_anon_key' },
+        { id: 'github-token',      key: GITHUB_TOKEN_KEY }
+    ];
+    function restoreSettings() {
+        for (var i = 0; i < SETTINGS_FIELDS.length; i++) {
+            var f = SETTINGS_FIELDS[i];
+            var el = document.getElementById(f.id);
+            if (!el) continue;
+            var saved = localStorage.getItem(f.key);
+            if (saved !== null && saved !== '') el.value = saved;
+        }
+    }
+    // Restore immediately (script is at bottom, DOM should be ready)
+    restoreSettings();
+    // Also restore after DOMContentLoaded as a safety net
+    // (some browsers re-apply hardcoded value= attributes after initial parse)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', restoreSettings);
+    }
+    // Save on input and change (covers typing, paste, and autofill)
     (function() {
-        var fields = [
-            { id: 'config-url',        key: 'ghl_config_url' },
-            { id: 'backend-url',       key: 'ghl_backend_url' },
-            { id: 'api-secret',        key: 'ghl_api_secret' },
-            { id: 'supabase-anon-key', key: 'ghl_supabase_anon_key' },
-            { id: 'github-token',      key: GITHUB_TOKEN_KEY }
-        ];
-        for (var i = 0; i < fields.length; i++) {
+        for (var i = 0; i < SETTINGS_FIELDS.length; i++) {
             (function(f) {
                 var el = document.getElementById(f.id);
                 if (!el) return;
-                var saved = localStorage.getItem(f.key);
-                if (saved) el.value = saved;
-                el.addEventListener('input', function() {
-                    localStorage.setItem(f.key, this.value.trim());
-                });
-            })(fields[i]);
+                function persist() {
+                    localStorage.setItem(f.key, el.value.trim());
+                }
+                el.addEventListener('input', persist);
+                el.addEventListener('change', persist);
+            })(SETTINGS_FIELDS[i]);
         }
     })();
 
