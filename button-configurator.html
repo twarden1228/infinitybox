@@ -2303,8 +2303,8 @@
         lines.push('            style.textContent = CUSTOM_CSS;');
         lines.push('        } else {');
         lines.push('            style.textContent = [');
-        lines.push('                "#" + CONTAINER_ID + " { display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;align-items:flex-start; }",');
-        lines.push('                ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('                "#" + CONTAINER_ID + " { display:flex;flex-wrap:nowrap;gap:6px;padding:0;margin-right:8px;align-items:center;align-self:center; }",');
+        lines.push('                ".gcb-btn { display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:#374151;position:relative;transition:all 0.15s;font-family:inherit;white-space:nowrap; }",');
         lines.push('                ".gcb-btn:hover { background:#f9fafb;border-color:#9ca3af; }",');
         lines.push('                ".gcb-icon { width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0; }",');
         lines.push('                ".gcb-icon svg { width:14px;height:14px; }",');
@@ -2316,7 +2316,7 @@
         lines.push('                ".gcb-dropdown.gcb-open { display:block; }",');
         lines.push('                ".gcb-dd-item { padding:10px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s; }",');
         lines.push('                ".gcb-dd-item:hover { background:#f1f5f9; }",');
-        lines.push('                ".gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:13px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s; }",');
+        lines.push('                ".gcb-settings-btn { display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px dashed #cbd5e1;border-radius:6px;background:#f8fafc;font-size:12px;cursor:pointer;color:#64748b;font-family:inherit;transition:all 0.15s;white-space:nowrap; }",');
         lines.push('                ".gcb-settings-btn:hover { background:#e2e8f0; }",');
         lines.push('                ".gcb-panel-overlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:10002; }",');
         lines.push('                ".gcb-panel-overlay.gcb-open { display:block; }",');
@@ -2406,7 +2406,7 @@
         lines.push('                ".gcb-df-success h3 { font-size:18px;font-weight:700;color:#1e293b;margin:0 0 6px; }",');
         lines.push('                ".gcb-df-success p { font-size:14px;color:#64748b;margin:0; }",');
         lines.push('                ".gcb-icon-toggle svg { color:#7c3aed; }",');
-        lines.push('                ".gcb-toggle-container { display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:13px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit; }",');
+        lines.push('                ".gcb-toggle-container { display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;font-size:12px;font-weight:500;color:#374151;cursor:pointer;transition:all 0.15s;font-family:inherit;white-space:nowrap; }",');
         lines.push('                ".gcb-toggle-container:hover { border-color:#9ca3af; }",');
         lines.push('                ".gcb-toggle-track { position:relative;width:36px;height:20px;background:#cbd5e1;border-radius:20px;transition:background 0.2s;flex-shrink:0; }",');
         lines.push('                ".gcb-toggle-track.gcb-on { background:#3b82f6; }",');
@@ -3239,9 +3239,16 @@
         lines.push('');
         lines.push('    // ---- FIND TARGET ELEMENT ----');
         lines.push('    function findTarget() {');
+        lines.push('        // Inject into the topmenu nav row (same row as Contacts/Smart Lists/Bulk Actions tabs)');
+        lines.push('        var topmenu = document.querySelector(".topmenu-nav");');
+        lines.push('        if (topmenu) return topmenu;');
+        lines.push('        // Fallback - find by tab title element');
+        lines.push('        var titleEl = document.querySelector(".topmenu-navtitle");');
+        lines.push('        if (titleEl && titleEl.parentElement) return titleEl.parentElement;');
+        lines.push('        // Old fallbacks');
         lines.push('        var target = document.getElementById("contact-details");');
         lines.push('        if (target) return target;');
-        lines.push('        var selectors = [".hl_contact-details-left", ".hl_contact-details", "header", "main"];');
+        lines.push('        var selectors = [".hl_contact-details-left", ".hl_contact-details"];');
         lines.push('        for (var i = 0; i < selectors.length; i++) {');
         lines.push('            target = document.querySelector(selectors[i]);');
         lines.push('            if (target) return target;');
@@ -3459,7 +3466,7 @@
         lines.push('        });');
         lines.push('        container.appendChild(settingsBtn);');
         lines.push('');
-        lines.push('        // Insert at top of target');
+        lines.push('        // Insert at start of topmenu-nav row so buttons sit BEFORE the tabs (left side)');
         lines.push('        if (target.firstChild) {');
         lines.push('            target.insertBefore(container, target.firstChild);');
         lines.push('        } else {');
