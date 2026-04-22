@@ -194,24 +194,5 @@
                 "value": "followup"
             }
         ]
-    },
-    {
-        "id": "btn_1772142061609_8",
-        "name": "Call Stage",
-        "type": "dropdown",
-        "options": [
-            {
-                "id": "opt_1772142074208_9",
-                "name": "Day 1",
-                "type": "tag",
-                "value": "day1"
-            },
-            {
-                "id": "opt_1772142083526_10",
-                "name": "Day 2",
-                "type": "tag",
-                "value": "Day2"
-            }
-        ]
     }
 ]
