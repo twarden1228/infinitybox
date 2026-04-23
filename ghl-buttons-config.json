@@ -147,6 +147,30 @@
                 "name": "Quility",
                 "type": "link",
                 "value": "https://hq.quility.com"
+            },
+            {
+                "id": "opt_1776976485200_2",
+                "name": "Corebridge",
+                "type": "link",
+                "value": "https://connext.corebridgefinancial.com/life/connext-portal/public/login"
+            },
+            {
+                "id": "opt_1776976521300_3",
+                "name": "Aetna",
+                "type": "link",
+                "value": "https://www.aetna.com/producer_public/login.fcc"
+            },
+            {
+                "id": "opt_1776976558166_4",
+                "name": "Royal Neighbors",
+                "type": "link",
+                "value": "https://agent.royalneighbors.org/login"
+            },
+            {
+                "id": "opt_1776976581400_5",
+                "name": "Combined",
+                "type": "link",
+                "value": "https://sales.combinedinsurance.com/AgentPortal"
             }
         ]
     },
