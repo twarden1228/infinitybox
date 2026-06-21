@@ -216,6 +216,12 @@
                 "name": "Follow/up",
                 "type": "tag",
                 "value": "followup"
+            },
+            {
+                "id": "opt_1782013417577_2",
+                "name": "Stop Drip (In Contact)",
+                "type": "tag",
+                "value": "In-Contact"
             }
         ]
     }
