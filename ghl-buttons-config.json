@@ -171,6 +171,12 @@
                 "name": "Combined",
                 "type": "link",
                 "value": "https://sales.combinedinsurance.com/AgentPortal"
+            },
+            {
+                "id": "opt_1785272139662_2",
+                "name": "Nationwide",
+                "type": "link",
+                "value": "agentcenter.nationwide.com/home"
             }
         ]
     },
