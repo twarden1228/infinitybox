@@ -228,6 +228,12 @@
                 "name": "🛑 Stop Drip - In Contact",
                 "type": "tag",
                 "value": "In-Contact"
+            },
+            {
+                "id": "opt_1786642545898_2",
+                "name": "Answered Call",
+                "type": "tag",
+                "value": "answered"
             }
         ]
     }
